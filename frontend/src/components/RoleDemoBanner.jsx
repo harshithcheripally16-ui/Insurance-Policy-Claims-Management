@@ -37,11 +37,11 @@ export default function RoleDemoBanner() {
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <AutoAwesomeIcon sx={{ color: '#f59e0b', fontSize: 18 }} />
         <Typography variant="caption" sx={{ fontWeight: 700, color: '#e2e8f0', fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-          Demo Switcher:
+          Role Demo Switcher:
         </Typography>
       </Box>
 
-      {/* Horizontally scrollable chips container on small screens */}
+      {/* Horizontally scrollable MUI Chips container */}
       <Box 
         sx={{ 
           display: 'flex', 
@@ -57,7 +57,7 @@ export default function RoleDemoBanner() {
         {demoRoles.map((r) => {
           const isActive = user?.role === r.role;
           return (
-            <Tooltip key={r.role} title={`Switch to ${r.label}`}>
+            <Tooltip key={r.role} title={`Switch to ${r.label} (${r.email})`}>
               <Chip
                 icon={r.icon}
                 label={r.label}

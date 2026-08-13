@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Grid, Paper, Typography, Button, Table, TableBody, TableCell,
   TableHead, TableRow, TableContainer, Chip, Card, CardContent, Dialog, DialogTitle,
-
   DialogContent, DialogActions, TextField, MenuItem, Alert
 } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddIcon from '@mui/icons-material/Add';
 import GavelIcon from '@mui/icons-material/Gavel';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, Tooltip, Legend
@@ -108,13 +109,16 @@ export default function Dashboard() {
       {/* Welcome Banner */}
       <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: '#1e3a8a', color: '#ffffff', borderRadius: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800 }}>
-              Namaste, {user?.full_name}! 🙏
-            </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.5 }}>
-              Role View: <strong>{user?.role?.replace('_', ' ')}</strong> | InsurCare Educational Portal
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <VerifiedUserIcon sx={{ fontSize: 36, color: '#60a5fa' }} />
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                Welcome, {user?.full_name}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.2 }}>
+                Role: <strong>{user?.role?.replace('_', ' ')}</strong> | InsurCare Policy & Claims Portal
+              </Typography>
+            </Box>
           </Box>
           {user?.role === 'CUSTOMER' && (
             <Button
@@ -220,52 +224,51 @@ export default function Dashboard() {
           <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto' }}>
             <Table>
               <TableHead sx={{ bgcolor: '#f8fafc' }}>
-
-              <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Claim #</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Reason</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Amount (₹)</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Risk Score & Level</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {claims.slice(0, 8).map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell sx={{ fontWeight: 700 }}>{c.claim_number}</TableCell>
-                  <TableCell>{c.customer?.full_name}</TableCell>
-                  <TableCell>{c.reason}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>₹{c.amount?.toLocaleString('en-IN')}</TableCell>
-                  <TableCell>
-                    <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={c.status.replace('_', ' ')}
-                      color={c.status === 'APPROVED' ? 'success' : c.status === 'REJECTED' ? 'error' : 'warning'}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button size="small" variant="outlined" onClick={() => setSelectedDocClaim(c)}>
-                        Docs ({c.documents?.length || 0})
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        startIcon={<GavelIcon />}
-                        onClick={() => { setSelectedReviewClaim(c); setOpenReviewModal(true); }}
-                      >
-                        Review
-                      </Button>
-                    </Box>
-                  </TableCell>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700 }}>Claim #</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Reason</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Amount (₹)</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Risk Score & Level</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
+              </TableHead>
+              <TableBody>
+                {claims.slice(0, 8).map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell sx={{ fontWeight: 700 }}>{c.claim_number}</TableCell>
+                    <TableCell>{c.customer?.full_name}</TableCell>
+                    <TableCell>{c.reason}</TableCell>
+                    <TableCell sx={{ fontWeight: 700 }}>₹{c.amount?.toLocaleString('en-IN')}</TableCell>
+                    <TableCell>
+                      <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={c.status.replace('_', ' ')}
+                        color={c.status === 'APPROVED' ? 'success' : c.status === 'REJECTED' ? 'error' : 'warning'}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                        <Button size="small" variant="outlined" startIcon={<FolderSharedIcon />} onClick={() => setSelectedDocClaim(c)}>
+                          Docs ({c.documents?.length || 0})
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<GavelIcon />}
+                          onClick={() => { setSelectedReviewClaim(c); setOpenReviewModal(true); }}
+                        >
+                          Review
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
             </Table>
           </TableContainer>
         </Paper>
@@ -276,8 +279,8 @@ export default function Dashboard() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                My Active Policies ({policies.length})
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ShieldIcon color="primary" /> My Active Policies ({policies.length})
               </Typography>
               {policies.map((p) => (
                 <Card key={p.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>
@@ -301,8 +304,8 @@ export default function Dashboard() {
           </Grid>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                My Submitted Claims ({claims.length})
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <ReceiptLongIcon color="warning" /> My Submitted Claims ({claims.length})
               </Typography>
               {claims.map((c) => (
                 <Card key={c.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>

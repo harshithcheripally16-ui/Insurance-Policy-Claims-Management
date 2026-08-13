@@ -13,6 +13,7 @@ import GavelIcon from '@mui/icons-material/Gavel';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
   XAxis, YAxis, Tooltip, Legend
@@ -104,6 +105,8 @@ export default function Dashboard() {
     { name: 'Financials (₹)', Premiums: stats.total_premium_collected, ClaimsPaid: stats.total_claim_amount }
   ];
 
+  const canSubmitClaim = user?.role === 'CUSTOMER' || user?.role === 'ADMIN' || user?.role === 'AGENT';
+
   return (
     <Box sx={{ pb: 6 }}>
       {/* Welcome Banner */}
@@ -120,7 +123,7 @@ export default function Dashboard() {
               </Typography>
             </Box>
           </Box>
-          {user?.role === 'CUSTOMER' && (
+          {canSubmitClaim && (
             <Button
               variant="contained"
               color="secondary"
@@ -215,7 +218,7 @@ export default function Dashboard() {
         </Grid>
       )}
 
-      {/* CLAIMS OFFICER WORKBENCH */}
+      {/* CLAIMS OFFICER & ADMIN WORKBENCH */}
       {(user?.role === 'CLAIMS_OFFICER' || user?.role === 'ADMIN') && (
         <Paper sx={{ p: 3, borderRadius: 3, mb: 4 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
@@ -274,15 +277,15 @@ export default function Dashboard() {
         </Paper>
       )}
 
-      {/* CUSTOMER MY POLICIES & CLAIMS */}
-      {user?.role === 'CUSTOMER' && (
+      {/* CUSTOMER & AGENT POLICIES / CLAIMS PANELS */}
+      {(user?.role === 'CUSTOMER' || user?.role === 'AGENT' || user?.role === 'ADMIN') && (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ShieldIcon color="primary" /> My Active Policies ({policies.length})
+                <ShieldIcon color="primary" /> {user?.role === 'AGENT' ? 'Customer Policies Portfolio' : 'Active Policies'} ({policies.length})
               </Typography>
-              {policies.map((p) => (
+              {policies.slice(0, 6).map((p) => (
                 <Card key={p.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -292,10 +295,10 @@ export default function Dashboard() {
                       <Chip label={p.status} color="success" size="small" />
                     </Box>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      Policy #: {p.policy_number} | Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                      Policy #: {p.policy_number} | Customer: {p.customer?.full_name || 'N/A'}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      Premium: ₹{p.premium?.toLocaleString('en-IN')}/yr | Valid until: {new Date(p.end_date).toLocaleDateString('en-IN')}
+                      Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')} | Premium: ₹{p.premium?.toLocaleString('en-IN')}/yr
                     </Typography>
                   </CardContent>
                 </Card>
@@ -305,9 +308,9 @@ export default function Dashboard() {
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, borderRadius: 3 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ReceiptLongIcon color="warning" /> My Submitted Claims ({claims.length})
+                <ReceiptLongIcon color="warning" /> {user?.role === 'AGENT' ? 'Customer Claims Overview' : 'Submitted Claims'} ({claims.length})
               </Typography>
-              {claims.map((c) => (
+              {claims.slice(0, 6).map((c) => (
                 <Card key={c.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>
                   <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -317,7 +320,7 @@ export default function Dashboard() {
                       <Chip label={c.status.replace('_', ' ')} color={c.status === 'APPROVED' ? 'success' : 'warning'} size="small" />
                     </Box>
                     <Typography variant="caption" color="text.secondary" display="block">
-                      Amount: ₹{c.amount?.toLocaleString('en-IN')} | Date: {new Date(c.incident_date).toLocaleDateString('en-IN')}
+                      Customer: {c.customer?.full_name} | Amount: ₹{c.amount?.toLocaleString('en-IN')}
                     </Typography>
                     {c.reviews?.length > 0 && (
                       <Alert severity="info" sx={{ mt: 1, py: 0, px: 1 }}>

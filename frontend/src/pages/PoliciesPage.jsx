@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Grid, Card, CardContent, CardActions, Button,
   Chip, Tabs, Tab, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
-
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Alert
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,6 +19,10 @@ export default function PoliciesPage() {
   const [selectedCatalog, setSelectedCatalog] = useState(null);
   const [targetCustomer, setTargetCustomer] = useState('');
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
+  const [openCatalogModal, setOpenCatalogModal] = useState(false);
+  const [newCatalog, setNewCatalog] = useState({
+    code: '', title: '', type: 'Health', description: '', base_premium: '', max_coverage: '', term_months: 12
+  });
   const [msg, setMsg] = useState('');
 
   const loadData = async () => {
@@ -61,14 +65,47 @@ export default function PoliciesPage() {
     }
   };
 
+  const handleCreateCatalog = async (e) => {
+    e.preventDefault();
+    setMsg('');
+    try {
+      await api.post('/policy-catalog', {
+        ...newCatalog,
+        base_premium: parseFloat(newCatalog.base_premium),
+        max_coverage: parseFloat(newCatalog.max_coverage),
+        term_months: parseInt(newCatalog.term_months)
+      });
+      setOpenCatalogModal(false);
+      setNewCatalog({ code: '', title: '', type: 'Health', description: '', base_premium: '', max_coverage: '', term_months: 12 });
+      loadData();
+    } catch (err) {
+      setMsg(err.response?.data?.detail || 'Failed to create policy catalog template');
+    }
+  };
+
   return (
     <Box sx={{ pb: 4 }}>
-      <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a', mb: 1 }}>
-        Policy Management
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-        Browse available insurance products or view active customer policies.
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
+            Policy Management
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Browse available insurance products or view active customer policies.
+          </Typography>
+        </Box>
+
+        {user?.role === 'ADMIN' && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddCircleIcon />}
+            onClick={() => setOpenCatalogModal(true)}
+          >
+            Create Policy Catalog Template
+          </Button>
+        )}
+      </Box>
 
       <Paper sx={{ mb: 3 }}>
         <Tabs value={tab} onChange={(e, val) => setTab(val)} indicatorColor="primary" textColor="primary">
@@ -133,7 +170,6 @@ export default function PoliciesPage() {
         <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto' }}>
           <Table>
             <TableHead sx={{ bgcolor: '#f8fafc' }}>
-
               <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Policy Number</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Title & Type</TableCell>
@@ -208,6 +244,77 @@ export default function PoliciesPage() {
             Confirm Purchase
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* CREATE CATALOG TEMPLATE MODAL (ADMIN ONLY) */}
+      <Dialog open={openCatalogModal} onClose={() => setOpenCatalogModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Create Policy Catalog Template</DialogTitle>
+        <Box component="form" onSubmit={handleCreateCatalog}>
+          <DialogContent>
+            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+            <TextField
+              fullWidth
+              label="Policy Code (e.g., POL-HLTH-05)"
+              value={newCatalog.code}
+              onChange={(e) => setNewCatalog({ ...newCatalog, code: e.target.value })}
+              margin="dense"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Policy Title"
+              value={newCatalog.title}
+              onChange={(e) => setNewCatalog({ ...newCatalog, title: e.target.value })}
+              margin="dense"
+              required
+            />
+            <TextField
+              select
+              fullWidth
+              label="Insurance Type"
+              value={newCatalog.type}
+              onChange={(e) => setNewCatalog({ ...newCatalog, type: e.target.value })}
+              margin="dense"
+            >
+              <MenuItem value="Health">Health</MenuItem>
+              <MenuItem value="Auto">Auto</MenuItem>
+              <MenuItem value="Home">Home</MenuItem>
+              <MenuItem value="Life">Life</MenuItem>
+            </TextField>
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Description & Coverage Details"
+              value={newCatalog.description}
+              onChange={(e) => setNewCatalog({ ...newCatalog, description: e.target.value })}
+              margin="dense"
+              required
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Base Premium Amount (₹)"
+              value={newCatalog.base_premium}
+              onChange={(e) => setNewCatalog({ ...newCatalog, base_premium: e.target.value })}
+              margin="dense"
+              required
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Max Coverage Limit (₹)"
+              value={newCatalog.max_coverage}
+              onChange={(e) => setNewCatalog({ ...newCatalog, max_coverage: e.target.value })}
+              margin="dense"
+              required
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenCatalogModal(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Create Catalog Item</Button>
+          </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );

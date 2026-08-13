@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Typography, Divider, Paper, Drawer
+  Typography, Divider, Paper, Drawer, Chip
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PolicyIcon from '@mui/icons-material/Policy';
@@ -10,6 +10,12 @@ import CategoryIcon from '@mui/icons-material/Category';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import PeopleIcon from '@mui/icons-material/People';
 import DownloadIcon from '@mui/icons-material/Download';
+import AddTaskIcon from '@mui/icons-material/AddTask';
+import GavelIcon from '@mui/icons-material/Gavel';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import PersonIcon from '@mui/icons-material/Person';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -33,26 +39,78 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     }
   };
 
-  const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-    { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
-    { label: 'My Policies', path: '/policies', icon: <PolicyIcon /> },
-    { label: 'Claims Workbench', path: '/claims', icon: <AssignmentLateIcon /> },
-  ];
+  // Define Role-Specific Main Menus
+  const getNavItems = () => {
+    switch (user?.role) {
+      case 'CUSTOMER':
+        return [
+          { label: 'Customer Overview', path: '/dashboard', icon: <DashboardIcon /> },
+          { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
+          { label: 'My Policies', path: '/policies', icon: <PolicyIcon /> },
+          { label: 'Submit & Track Claims', path: '/claims', icon: <AssignmentLateIcon /> },
+        ];
 
-  if (user?.role === 'ADMIN' || user?.role === 'AGENT') {
-    navItems.push({ label: 'Manage Users', path: '/users', icon: <PeopleIcon /> });
-  }
+      case 'AGENT':
+        return [
+          { label: 'Agent Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+          { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
+          { label: 'Customer Policies', path: '/policies', icon: <PolicyIcon /> },
+          { label: 'Customer Claims', path: '/claims', icon: <AssignmentLateIcon /> },
+          { label: 'Customer Directory', path: '/users', icon: <PeopleIcon /> },
+        ];
+
+      case 'CLAIMS_OFFICER':
+        return [
+          { label: 'Officer Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
+          { label: 'Review Workbench', path: '/claims', icon: <GavelIcon /> },
+          { label: 'Document Attachments', path: '/claims?tab=documents', icon: <FolderSharedIcon /> },
+        ];
+
+      case 'ADMIN':
+      default:
+        // Admin Privileges: Comprehensive combination of Customer, Agent & Officer features
+        return [
+          { label: 'Master Analytics', path: '/dashboard', icon: <DashboardIcon /> },
+          { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
+          { label: 'All System Policies', path: '/policies', icon: <PolicyIcon /> },
+          { label: 'Claims Workbench', path: '/claims', icon: <GavelIcon /> },
+          { label: 'User Directory', path: '/users', icon: <PeopleIcon /> },
+        ];
+    }
+  };
+
+  const navItems = getNavItems();
+
+  const roleMeta = {
+    ADMIN: { label: 'Admin Access', color: 'error', icon: <AdminPanelSettingsIcon fontSize="small" /> },
+    CLAIMS_OFFICER: { label: 'Officer Menu', color: 'warning', icon: <GavelIcon fontSize="small" /> },
+    AGENT: { label: 'Agent Menu', color: 'info', icon: <SupportAgentIcon fontSize="small" /> },
+    CUSTOMER: { label: 'Customer Portal', color: 'success', icon: <PersonIcon fontSize="small" /> },
+  };
+
+  const currentRole = roleMeta[user?.role] || roleMeta.CUSTOMER;
 
   const sidebarContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', p: 2 }}>
       <Box>
+        {/* Role Badge Indicator */}
+        <Box sx={{ px: 1, mb: 2 }}>
+          <Chip
+            icon={currentRole.icon}
+            label={currentRole.label}
+            color={currentRole.color}
+            size="small"
+            sx={{ fontWeight: 700, width: '100%', justifyContent: 'flex-start', px: 1 }}
+          />
+        </Box>
+
         <Typography variant="overline" sx={{ px: 2, color: '#94a3b8', fontWeight: 700, letterSpacing: 1 }}>
-          Main Menu
+          Dedicated Menu
         </Typography>
+
         <List sx={{ mt: 1 }}>
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || (location.pathname + location.search) === item.path;
             return (
               <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
                 <ListItemButton
@@ -76,7 +134,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     primary={item.label}
                     primaryTypographyProps={{
                       fontWeight: isActive ? 700 : 500,
-                      fontSize: '0.9rem',
+                      fontSize: '0.88rem',
                     }}
                   />
                 </ListItemButton>

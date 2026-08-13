@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow,
-  TableContainer, Chip, Button, MenuItem, TextField, Dialog, DialogTitle,
-  DialogContent, DialogActions
+  Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
+  Chip, Button, MenuItem, TextField, Dialog, DialogTitle, DialogContent,
+  DialogActions, Alert
 } from '@mui/material';
 import GavelIcon from '@mui/icons-material/Gavel';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
+import AddIcon from '@mui/icons-material/Add';
 import ClaimRiskChip from '../components/ClaimRiskChip';
 import DocumentViewerDialog from '../components/DocumentViewerDialog';
 import api from '../services/api';
@@ -14,25 +15,51 @@ import { useAuth } from '../context/AuthContext';
 export default function ClaimsPage() {
   const { user } = useAuth();
   const [claims, setClaims] = useState([]);
+  const [policies, setPolicies] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedDocClaim, setSelectedDocClaim] = useState(null);
   const [selectedReviewClaim, setSelectedReviewClaim] = useState(null);
   const [openReviewModal, setOpenReviewModal] = useState(false);
+  const [openClaimModal, setOpenClaimModal] = useState(false);
+  const [claimForm, setClaimForm] = useState({ policy_id: '', reason: '', description: '', amount: '', incident_date: '' });
   const [reviewForm, setReviewForm] = useState({ decision: 'APPROVED', remarks: '' });
+  const [msg, setMsg] = useState('');
 
-  const loadClaims = async () => {
+  const loadData = async () => {
     try {
       const url = statusFilter ? `/claims?status_filter=${statusFilter}` : '/claims';
-      const res = await api.get(url);
-      setClaims(res.data);
+      const [resClaims, resPol] = await Promise.all([
+        api.get(url),
+        api.get('/policies')
+      ]);
+      setClaims(resClaims.data);
+      setPolicies(resPol.data);
     } catch (err) {
       console.error(err);
     }
   };
 
   useEffect(() => {
-    loadClaims();
+    loadData();
   }, [statusFilter, user]);
+
+  const handleClaimSubmit = async (e) => {
+    e.preventDefault();
+    setMsg('');
+    try {
+      await api.post('/claims', {
+        ...claimForm,
+        policy_id: parseInt(claimForm.policy_id),
+        amount: parseFloat(claimForm.amount),
+        incident_date: new Date(claimForm.incident_date).toISOString()
+      });
+      setOpenClaimModal(false);
+      setClaimForm({ policy_id: '', reason: '', description: '', amount: '', incident_date: '' });
+      loadData();
+    } catch (err) {
+      setMsg(err.response?.data?.detail || 'Failed to submit claim');
+    }
+  };
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault();
@@ -42,13 +69,14 @@ export default function ClaimsPage() {
       setOpenReviewModal(false);
       setSelectedReviewClaim(null);
       setReviewForm({ decision: 'APPROVED', remarks: '' });
-      loadClaims();
+      loadData();
     } catch (err) {
       console.error(err);
     }
   };
 
   const isOfficerOrAdmin = user?.role === 'CLAIMS_OFFICER' || user?.role === 'ADMIN';
+  const canSubmitClaim = user?.role === 'CUSTOMER' || user?.role === 'ADMIN' || user?.role === 'AGENT';
 
   return (
     <Box sx={{ pb: 4 }}>
@@ -61,21 +89,35 @@ export default function ClaimsPage() {
             Manage submitted claims, examine risk scores, and process approval decisions.
           </Typography>
         </Box>
-        <TextField
-          select
-          size="small"
-          label="Filter by Status"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          sx={{ width: 200 }}
-        >
-          <MenuItem value="">All Statuses</MenuItem>
-          <MenuItem value="SUBMITTED">Submitted</MenuItem>
-          <MenuItem value="UNDER_REVIEW">Under Review</MenuItem>
-          <MenuItem value="APPROVED">Approved</MenuItem>
-          <MenuItem value="REJECTED">Rejected</MenuItem>
-          <MenuItem value="DOCUMENTS_REQUIRED">Docs Required</MenuItem>
-        </TextField>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {canSubmitClaim && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenClaimModal(true)}
+            >
+              Submit Claim
+            </Button>
+          )}
+
+          <TextField
+            select
+            size="small"
+            label="Filter by Status"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            sx={{ width: 180 }}
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="SUBMITTED">Submitted</MenuItem>
+            <MenuItem value="UNDER_REVIEW">Under Review</MenuItem>
+            <MenuItem value="APPROVED">Approved</MenuItem>
+            <MenuItem value="REJECTED">Rejected</MenuItem>
+            <MenuItem value="DOCUMENTS_REQUIRED">Docs Required</MenuItem>
+          </TextField>
+        </Box>
       </Box>
 
       <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', p: { xs: 1, sm: 3 }, borderRadius: 3 }}>
@@ -145,6 +187,72 @@ export default function ClaimsPage() {
         </Table>
       </TableContainer>
 
+      {/* SUBMIT CLAIM DIALOG */}
+      <Dialog open={openClaimModal} onClose={() => setOpenClaimModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Submit New Claim</DialogTitle>
+        <Box component="form" onSubmit={handleClaimSubmit}>
+          <DialogContent>
+            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+            <TextField
+              select
+              fullWidth
+              label="Select Policy"
+              value={claimForm.policy_id}
+              onChange={(e) => setClaimForm({ ...claimForm, policy_id: e.target.value })}
+              margin="normal"
+              required
+            >
+              {policies.map((p) => (
+                <MenuItem key={p.id} value={p.id}>
+                  {p.title} ({p.policy_number}) - Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              label="Claim Reason"
+              value={claimForm.reason}
+              onChange={(e) => setClaimForm({ ...claimForm, reason: e.target.value })}
+              margin="normal"
+              required
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Incident Description"
+              value={claimForm.description}
+              onChange={(e) => setClaimForm({ ...claimForm, description: e.target.value })}
+              margin="normal"
+              required
+            />
+            <TextField
+              fullWidth
+              type="number"
+              label="Claim Amount (₹)"
+              value={claimForm.amount}
+              onChange={(e) => setClaimForm({ ...claimForm, amount: e.target.value })}
+              margin="normal"
+              required
+            />
+            <TextField
+              fullWidth
+              type="date"
+              label="Incident Date"
+              InputLabelProps={{ shrink: true }}
+              value={claimForm.incident_date}
+              onChange={(e) => setClaimForm({ ...claimForm, incident_date: e.target.value })}
+              margin="normal"
+              required
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setOpenClaimModal(false)}>Cancel</Button>
+            <Button type="submit" variant="contained">Submit Claim</Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
+
       {/* OFFICER REVIEW DIALOG */}
       <Dialog open={openReviewModal} onClose={() => setOpenReviewModal(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
@@ -206,7 +314,7 @@ export default function ClaimsPage() {
         open={Boolean(selectedDocClaim)}
         onClose={() => setSelectedDocClaim(null)}
         claim={selectedDocClaim}
-        onRefresh={loadClaims}
+        onRefresh={loadData}
       />
     </Box>
   );

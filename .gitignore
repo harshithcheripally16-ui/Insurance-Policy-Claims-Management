@@ -1,0 +1,22 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*/__pycache__/
+backend/*/*/__pycache__/
+*.pyc
+.pytest_cache/
+backend/insurance.db
+
+# File Uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / Environment
+.DS_Store
+.env
+*.log

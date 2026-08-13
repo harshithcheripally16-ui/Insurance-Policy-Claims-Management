@@ -1,0 +1,135 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import {
+  Container, Box, Paper, Typography, TextField, Button, Alert,
+  Divider, Chip, Stack
+} from '@mui/material';
+import ShieldIcon from '@mui/icons-material/Shield';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import GavelIcon from '@mui/icons-material/Gavel';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import PersonIcon from '@mui/icons-material/Person';
+import { useAuth } from '../context/AuthContext';
+
+export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('admin@insure.com');
+  const [password, setPassword] = useState('password123');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Login failed. Please check credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickFill = (quickEmail) => {
+    setEmail(quickEmail);
+    setPassword('password123');
+  };
+
+  return (
+    <Container maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
+        <Box sx={{ display: 'inline-flex', p: 1.5, bgcolor: '#eff6ff', borderRadius: '50%', mb: 1 }}>
+          <ShieldIcon sx={{ fontSize: 40, color: '#1e3a8a' }} />
+        </Box>
+
+        <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
+          InsurCare Login
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Insurance Policy & Claims Management System
+        </Typography>
+
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+        <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'left' }}>
+          <TextField
+            fullWidth
+            label="Email Address"
+            variant="outlined"
+            margin="normal"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Password"
+            type="password"
+            variant="outlined"
+            margin="normal"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={loading}
+            startIcon={<LockOpenIcon />}
+            sx={{ mt: 2.5, mb: 2, bgcolor: '#1e3a8a', py: 1.2 }}
+          >
+            {loading ? 'Authenticating...' : 'Sign In'}
+          </Button>
+        </Box>
+
+        <Divider sx={{ my: 2 }}>
+          <Typography variant="caption" color="text.secondary">
+            DEMO QUICK LOGINS
+          </Typography>
+        </Divider>
+
+        <Stack spacing={1}>
+          <Chip
+            icon={<AdminPanelSettingsIcon />}
+            label="Admin (admin@insure.com)"
+            color="error"
+            onClick={() => handleQuickFill('admin@insure.com')}
+          />
+          <Chip
+            icon={<GavelIcon />}
+            label="Claims Officer (officer@insure.com)"
+            color="warning"
+            onClick={() => handleQuickFill('officer@insure.com')}
+          />
+          <Chip
+            icon={<SupportAgentIcon />}
+            label="Insurance Agent (agent@insure.com)"
+            color="info"
+            onClick={() => handleQuickFill('agent@insure.com')}
+          />
+          <Chip
+            icon={<PersonIcon />}
+            label="Customer (customer@insure.com)"
+            color="success"
+            onClick={() => handleQuickFill('customer@insure.com')}
+          />
+        </Stack>
+
+        <Box sx={{ mt: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            Don't have an account?{' '}
+            <Link to="/register" style={{ color: '#1e3a8a', fontWeight: 600, textDecoration: 'none' }}>
+              Register Here
+            </Link>
+          </Typography>
+        </Box>
+      </Paper>
+    </Container>
+  );
+}

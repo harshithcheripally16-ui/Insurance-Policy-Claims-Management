@@ -11,22 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token) {
-      api.get('/auth/me')
-        .then(res => {
-          setUser(res.data);
-          localStorage.setItem('user', JSON.stringify(res.data));
-        })
-        .catch(() => {
-          logout();
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
-
   const login = async (email, password) => {
     const res = await api.post('/auth/login-json', { email, password });
     const { access_token, user: loggedUser } = res.data;
@@ -44,17 +28,44 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('user');
   };
 
-  // Demo 1-Click Role Switcher
-  const switchDemoRole = async (roleEmail) => {
-    try {
-      await login(roleEmail, 'password123');
-    } catch (err) {
-      console.error('Failed demo role login', err);
-    }
-  };
+  useEffect(() => {
+    const initAuth = async () => {
+      if (token) {
+        try {
+          const res = await api.get('/auth/me');
+          // If previous session was non-Customer (e.g. Officer/Admin), force customer login for Customer testing
+          if (res.data.role !== 'CUSTOMER') {
+            await login('customer@insure.com', 'password123');
+          } else {
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+          }
+        } catch (err) {
+          try {
+            await login('customer@insure.com', 'password123');
+          } catch (e) {
+            logout();
+          }
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        // Auto log in as Customer if no token exists
+        try {
+          await login('customer@insure.com', 'password123');
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    initAuth();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, switchDemoRole }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Container, Box, Paper, Typography, TextField, Button, Alert, MenuItem
+  Container, Box, Paper, Typography, TextField, Button, Alert
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import api from '../services/api';
@@ -44,10 +44,10 @@ export default function Register() {
     <Container maxWidth="xs" sx={{ mt: 6, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a', mb: 0.5, textAlign: 'center' }}>
-          Create Account
+          Customer Registration
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-          Register to InsurCare Management System
+          Register for a Customer Account
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -83,19 +83,6 @@ export default function Register() {
             required
           />
           <TextField
-            select
-            fullWidth
-            label="Register Role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            margin="dense"
-          >
-            <MenuItem value="CUSTOMER">Customer</MenuItem>
-            <MenuItem value="AGENT">Insurance Agent</MenuItem>
-            <MenuItem value="CLAIMS_OFFICER">Claims Officer</MenuItem>
-          </TextField>
-          <TextField
             fullWidth
             label="Phone Number"
             name="phone"
@@ -120,7 +107,7 @@ export default function Register() {
             startIcon={<PersonAddIcon />}
             sx={{ mt: 3, mb: 2, bgcolor: '#1e3a8a', py: 1.2 }}
           >
-            {loading ? 'Creating...' : 'Register'}
+            {loading ? 'Creating...' : 'Register Customer Account'}
           </Button>
         </Box>
 

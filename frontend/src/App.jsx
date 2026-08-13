@@ -4,13 +4,11 @@ import { Box, Container, CircularProgress } from '@mui/material';
 import { useAuth, AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import RoleDemoBanner from './components/RoleDemoBanner';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PoliciesPage from './pages/PoliciesPage';
 import ClaimsPage from './pages/ClaimsPage';
-import UsersPage from './pages/UsersPage';
 
 function ProtectedLayout() {
   const { user, loading } = useAuth();
@@ -30,7 +28,6 @@ function ProtectedLayout() {
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-      <RoleDemoBanner />
       <Navbar onMobileMenuToggle={() => setMobileOpen(!mobileOpen)} />
       <Box sx={{ display: 'flex', flexGrow: 1, overflowX: 'hidden' }}>
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
@@ -40,7 +37,6 @@ function ProtectedLayout() {
             <Route path="/policies" element={<PoliciesPage />} />
             <Route path="/policies/catalog" element={<PoliciesPage />} />
             <Route path="/claims" element={<ClaimsPage />} />
-            <Route path="/users" element={<UsersPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </Container>

@@ -59,6 +59,7 @@ export default function PoliciesPage() {
   const handleUpdatePolicy = async (e) => {
     e.preventDefault();
     setMsg({ type: '', text: '' });
+    const polNum = editingPolicy?.policy_number || '';
     try {
       await api.put(`/policies/${editingPolicy.id}`, {
         title: editForm.title,
@@ -69,7 +70,7 @@ export default function PoliciesPage() {
       });
       setOpenEditModal(false);
       setEditingPolicy(null);
-      setMsg({ type: 'success', text: `Policy ${editingPolicy.policy_number} details updated successfully!` });
+      setMsg({ type: 'success', text: `Policy ${polNum} details updated successfully!` });
       loadPolicies();
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to update policy' });
@@ -79,12 +80,13 @@ export default function PoliciesPage() {
   // Delete Policy
   const handleDeletePolicy = async () => {
     if (!deletingPolicy) return;
+    const polNum = deletingPolicy?.policy_number || '';
     setMsg({ type: '', text: '' });
     try {
       await api.delete(`/policies/${deletingPolicy.id}`);
       setOpenDeleteModal(false);
-      setMsg({ type: 'success', text: `Policy ${deletingPolicy.policy_number} cancelled successfully!` });
       setDeletingPolicy(null);
+      setMsg({ type: 'success', text: `Policy ${polNum} cancelled successfully!` });
       loadPolicies();
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to cancel policy' });

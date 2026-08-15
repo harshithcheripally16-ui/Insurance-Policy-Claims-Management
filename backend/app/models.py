@@ -12,6 +12,7 @@ class UserRole(str, enum.Enum):
 
 class PolicyStatus(str, enum.Enum):
     ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
     EXPIRED = "EXPIRED"
     CANCELLED = "CANCELLED"
     PENDING = "PENDING"

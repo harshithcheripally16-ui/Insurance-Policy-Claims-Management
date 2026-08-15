@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Grid, Card, CardContent, CardActions, Button,
   Chip, Tabs, Tab, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
   Dialog, DialogTitle, DialogContent, DialogActions, Alert, TextField, MenuItem,
-  IconButton, Tooltip, InputAdornment
+  IconButton, Tooltip, InputAdornment, List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -13,12 +13,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function PoliciesPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState(1); // Default to Customer Policies
+  const [tab, setTab] = useState(1); // Default to Active Customer Policies
   const [catalog, setCatalog] = useState([]);
   const [policies, setPolicies] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -73,7 +74,7 @@ export default function PoliciesPage() {
       });
       setOpenPurchaseModal(false);
       setSelectedCatalog(null);
-      setTab(1); // Switch to Customer Policies tab
+      setTab(1); // Switch to Active Customer Policies tab
       setMsg({ type: 'success', text: 'Policy successfully issued and assigned to customer!' });
       loadData();
     } catch (err) {
@@ -143,17 +144,24 @@ export default function PoliciesPage() {
       CANCELLED: { label: 'CANCELLED', color: 'default' },
     };
     const s = map[status] || { label: status, color: 'default' };
-    return <Chip label={s.label} color={s.color} size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />;
+    return <Chip label={s.label} color={s.color} size="small" sx={{ fontWeight: 800, borderRadius: 1.5 }} />;
   };
+
+  const featureList = [
+    'Cashless Settlement at 10,000+ Network Hospitals',
+    '24x7 Express Claims Assistance',
+    'Instant Digital Policy Document Delivery',
+    'Tax Benefits under Section 80D / 80C'
+  ];
 
   return (
     <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
+          <Typography variant="h4" sx={{ fontWeight: 900, color: 'secondary.main', letterSpacing: '-0.02em' }}>
             Customer Policy Management
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
             View, issue, update, and manage policy coverages for your customers.
           </Typography>
         </Box>
@@ -163,7 +171,7 @@ export default function PoliciesPage() {
           color="primary"
           startIcon={<AddIcon />}
           onClick={() => setTab(0)}
-          sx={{ py: 1, px: 2.5, fontWeight: 700 }}
+          sx={{ py: 1.2, px: 3, fontWeight: 800, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}
         >
           Issue New Policy
         </Button>
@@ -182,7 +190,7 @@ export default function PoliciesPage() {
           indicatorColor="primary"
           textColor="primary"
           sx={{
-            '& .MuiTab-root': { py: 1.5, fontWeight: 700, borderRadius: 2, textTransform: 'none' }
+            '& .MuiTab-root': { py: 1.5, fontWeight: 800, borderRadius: 2, textTransform: 'none' }
           }}
         >
           <Tab label={`Active Customer Policies (${policies.length})`} value={1} />
@@ -190,7 +198,7 @@ export default function PoliciesPage() {
         </Tabs>
       </Paper>
 
-      {/* TAB 1: CUSTOMER POLICIES TABLE */}
+      {/* TAB 1: ACTIVE CUSTOMER POLICIES TABLE */}
       {tab === 1 && (
         <Box>
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
@@ -199,7 +207,7 @@ export default function PoliciesPage() {
               placeholder="Search by Policy Number, Title, or Customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ width: 320 }}
+              sx={{ width: 340 }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -234,18 +242,18 @@ export default function PoliciesPage() {
                 ) : (
                   filteredPolicies.map((p) => (
                     <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                      <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>{p.policy_number}</TableCell>
+                      <TableCell sx={{ fontWeight: 800, color: 'secondary.main' }}>{p.policy_number}</TableCell>
                       <TableCell>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>{p.title}</Typography>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>{p.title}</Typography>
                         <Typography variant="caption" color="text.secondary">{p.type}</Typography>
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>
+                      <TableCell sx={{ fontWeight: 700 }}>
                         {p.customer?.full_name?.replace(/\s*\([^)]*\)/, '') || 'Customer'}
                       </TableCell>
                       <TableCell sx={{ fontWeight: 800, color: 'success.main' }}>
                         ₹{p.coverage_amount?.toLocaleString('en-IN')}
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
+                      <TableCell sx={{ fontWeight: 700 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
                       <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
                         {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
                       </TableCell>
@@ -276,7 +284,7 @@ export default function PoliciesPage() {
         </Box>
       )}
 
-      {/* TAB 0: AVAILABLE INSURANCE PLANS */}
+      {/* TAB 0: POLICYBAZAAR STYLE AVAILABLE INSURANCE PLANS */}
       {tab === 0 && (
         <Grid container spacing={3}>
           {catalog.map((item, index) => {
@@ -291,24 +299,25 @@ export default function PoliciesPage() {
                     justify: 'space-between',
                     position: 'relative',
                     bgcolor: 'background.paper',
-                    border: isPopular ? '2px solid' : '1px solid',
-                    borderColor: isPopular ? 'primary.main' : 'divider',
-                    boxShadow: isPopular ? '0 12px 30px -8px rgba(37, 99, 235, 0.25)' : undefined
+                    border: isPopular ? '2px solid #ff5a00' : '1.5px solid',
+                    borderColor: isPopular ? '#ff5a00' : 'divider',
+                    boxShadow: isPopular ? '0 12px 32px -6px rgba(255, 90, 0, 0.25)' : undefined
                   }}
                 >
                   {isPopular && (
                     <Chip
                       icon={<StarIcon sx={{ fontSize: '14px !important', color: '#ffffff !important' }} />}
-                      label="MOST POPULAR"
+                      label="PB BESTSELLER"
                       size="small"
-                      color="primary"
                       sx={{
                         position: 'absolute',
                         top: 14,
                         right: 14,
-                        fontWeight: 800,
+                        fontWeight: 900,
                         fontSize: '0.68rem',
-                        letterSpacing: '0.05em'
+                        letterSpacing: '0.05em',
+                        bgcolor: '#ff5a00',
+                        color: '#ffffff'
                       }}
                     />
                   )}
@@ -318,43 +327,55 @@ export default function PoliciesPage() {
                       <Chip
                         label={item.type}
                         size="small"
-                        sx={{ bgcolor: 'action.selected', color: 'primary.main', fontWeight: 700, borderRadius: 1.5 }}
+                        sx={{ bgcolor: 'action.selected', color: 'secondary.main', fontWeight: 800, borderRadius: 1.5 }}
                       />
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary' }}>
                         {item.code}
                       </Typography>
                     </Box>
 
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 900, color: 'secondary.main', mb: 1 }}>
                       {item.title}
                     </Typography>
 
-                    <Typography variant="body2" color="text.secondary" sx={{ minHeight: 48, mb: 2, lineHeight: 1.5 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ minHeight: 48, mb: 2, lineHeight: 1.5, fontWeight: 500 }}>
                       {item.description}
                     </Typography>
 
-                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 3, mb: 2, border: '1px solid', borderColor: 'divider' }}>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 600 }}>
+                    {/* Policybazaar Pricing Box */}
+                    <Box sx={{ p: 2.2, bgcolor: (theme) => theme.palette.mode === 'dark' ? '#14223d' : '#f4f7fa', borderRadius: 3, mb: 2.5, border: '1px solid', borderColor: 'divider' }}>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 700, uppercase: true }}>
                         Maximum Coverage Limit
                       </Typography>
-                      <Typography variant="h4" sx={{ fontWeight: 800, color: 'success.main', my: 0.5, letterSpacing: '-0.02em' }}>
+                      <Typography variant="h4" sx={{ fontWeight: 900, color: '#00a896', my: 0.5, letterSpacing: '-0.02em' }}>
                         ₹{item.max_coverage?.toLocaleString('en-IN')}
                       </Typography>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                         ₹{item.base_premium?.toLocaleString('en-IN')} <Typography component="span" variant="caption" color="text.secondary">/ year ({item.term_months} months term)</Typography>
                       </Typography>
                     </Box>
+
+                    <List size="small" disablePadding>
+                      {featureList.map((feat, i) => (
+                        <ListItem key={i} disablePadding sx={{ py: 0.4 }}>
+                          <ListItemIcon sx={{ minWidth: 24, color: '#00a896' }}>
+                            <CheckCircleIcon sx={{ fontSize: 16 }} />
+                          </ListItemIcon>
+                          <ListItemText primary={feat} primaryTypographyProps={{ fontSize: '0.8rem', color: 'text.secondary', fontWeight: 600 }} />
+                        </ListItem>
+                      ))}
+                    </List>
                   </CardContent>
 
                   <CardActions sx={{ p: 3, pt: 0 }}>
                     <Button
                       fullWidth
-                      variant={isPopular ? 'contained' : 'outlined'}
+                      variant="contained"
                       color="primary"
                       size="large"
                       startIcon={<ShoppingCartIcon />}
                       onClick={() => { setSelectedCatalog(item); setOpenPurchaseModal(true); }}
-                      sx={{ py: 1.2, fontWeight: 700 }}
+                      sx={{ py: 1.3, fontWeight: 800, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}
                     >
                       Issue Policy to Customer
                     </Button>
@@ -368,22 +389,22 @@ export default function PoliciesPage() {
 
       {/* ISSUE NEW POLICY MODAL */}
       <Dialog open={openPurchaseModal} onClose={() => setOpenPurchaseModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Issue Policy for Customer</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900, pt: 3, color: 'secondary.main' }}>Issue Policy for Customer</DialogTitle>
         <DialogContent>
           {selectedCatalog && (
             <Box sx={{ p: 2.5, bgcolor: 'action.hover', borderRadius: 3, mb: 3, border: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <ShieldIcon color="primary" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                <ShieldIcon sx={{ color: '#ff5a00' }} />
+                <Typography variant="subtitle1" sx={{ fontWeight: 900, color: 'secondary.main' }}>
                   {selectedCatalog.title}
                 </Typography>
               </Box>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 500 }}>
                 {selectedCatalog.description}
               </Typography>
               <Box sx={{ pt: 1.5, borderTop: '1px dashed', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>Annual Premium:</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'success.main' }}>
+                <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary' }}>Annual Premium:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#00a896' }}>
                   ₹{selectedCatalog.base_premium?.toLocaleString('en-IN')}
                 </Typography>
               </Box>
@@ -408,7 +429,7 @@ export default function PoliciesPage() {
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpenPurchaseModal(false)}>Cancel</Button>
-          <Button onClick={handlePurchase} variant="contained" color="primary" startIcon={<CheckCircleIcon />} sx={{ px: 3 }}>
+          <Button onClick={handlePurchase} variant="contained" color="primary" startIcon={<CheckCircleIcon />} sx={{ px: 3, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}>
             Issue & Assign Policy
           </Button>
         </DialogActions>
@@ -416,11 +437,11 @@ export default function PoliciesPage() {
 
       {/* EDIT POLICY MODAL */}
       <Dialog open={openEditModal} onClose={() => setOpenEditModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Edit Policy Details</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900, pt: 3, color: 'secondary.main' }}>Edit Policy Details</DialogTitle>
         <Box component="form" onSubmit={handleUpdatePolicy}>
           <DialogContent>
             {editingPolicy && (
-              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+              <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2, fontWeight: 600 }}>
                 Policy Number: <strong>{editingPolicy.policy_number}</strong> | Customer: <strong>{editingPolicy.customer?.full_name}</strong>
               </Typography>
             )}
@@ -482,7 +503,7 @@ export default function PoliciesPage() {
           </DialogContent>
           <DialogActions sx={{ p: 3 }}>
             <Button onClick={() => setOpenEditModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained" color="primary" sx={{ px: 3 }}>
+            <Button type="submit" variant="contained" color="primary" sx={{ px: 3, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}>
               Save Changes
             </Button>
           </DialogActions>
@@ -491,9 +512,9 @@ export default function PoliciesPage() {
 
       {/* CANCEL POLICY MODAL */}
       <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, pt: 3, color: 'error.main' }}>Cancel Policy Coverage</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900, pt: 3, color: 'error.main' }}>Cancel Policy Coverage</DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
             Are you sure you want to cancel policy <strong>{deletingPolicy?.policy_number}</strong> ({deletingPolicy?.title})?
           </Typography>
           <Alert severity="warning" sx={{ borderRadius: 2 }}>

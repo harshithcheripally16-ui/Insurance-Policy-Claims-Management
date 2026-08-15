@@ -42,17 +42,15 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
       <Box>
         {/* Role Badge Indicator */}
-        <Box sx={{ px: 1, mb: 2 }}>
+        <Box sx={{ px: 1, mb: 2.5 }}>
           <Chip
-            icon={<SupportAgentIcon fontSize="small" />}
+            icon={<SupportAgentIcon fontSize="small" sx={{ color: '#ffffff !important' }} />}
             label="Insurance Agent Portal"
-            color="info"
-            size="small"
-            sx={{ fontWeight: 700, width: '100%', justifyContent: 'flex-start', px: 1 }}
+            sx={{ fontWeight: 800, width: '100%', justifyContent: 'flex-start', px: 1, bgcolor: '#002970', color: '#ffffff' }}
           />
         </Box>
 
-        <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
+        <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 800, letterSpacing: '0.08em', fontSize: '0.7rem' }}>
           Agent Workspace
         </Typography>
 
@@ -60,28 +58,30 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
-              <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={item.path} disablePadding sx={{ mb: 0.8 }}>
                 <ListItemButton
                   onClick={() => {
                     navigate(item.path);
                     if (onMobileClose) onMobileClose();
                   }}
                   sx={{
-                    borderRadius: 2,
-                    bgcolor: isActive ? 'action.selected' : 'transparent',
-                    color: isActive ? 'primary.main' : 'text.primary',
+                    borderRadius: 2.5,
+                    borderLeft: isActive ? '4px solid #ff5a00' : '4px solid transparent',
+                    bgcolor: isActive ? (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 90, 0, 0.15)' : 'rgba(255, 90, 0, 0.08)' : 'transparent',
+                    color: isActive ? '#ff5a00' : 'text.primary',
                     '&:hover': {
                       bgcolor: 'action.hover',
                     },
+                    transition: 'all 0.2s ease'
                   }}
                 >
-                  <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
+                  <ListItemIcon sx={{ color: isActive ? '#ff5a00' : 'text.secondary', minWidth: 40 }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText
                     primary={item.label}
                     primaryTypographyProps={{
-                      fontWeight: isActive ? 700 : 500,
+                      fontWeight: isActive ? 800 : 600,
                       fontSize: '0.88rem',
                     }}
                   />
@@ -98,20 +98,20 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         <ListItemButton
           onClick={handleExportCSV}
           sx={{
-            borderRadius: 2,
+            borderRadius: 2.5,
             border: '1px solid',
             borderColor: 'divider',
             bgcolor: 'background.default',
             color: 'text.primary',
-            '&:hover': { bgcolor: 'action.hover' },
+            '&:hover': { bgcolor: 'action.hover', borderColor: '#ff5a00' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 36, color: 'secondary.main' }}>
+          <ListItemIcon sx={{ minWidth: 36, color: '#ff5a00' }}>
             <DownloadIcon />
           </ListItemIcon>
           <ListItemText
             primary="Download Summary"
-            primaryTypographyProps={{ fontWeight: 600, fontSize: '0.85rem' }}
+            primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem' }}
           />
         </ListItemButton>
       </Box>

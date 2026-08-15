@@ -10,6 +10,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PeopleIcon from '@mui/icons-material/People';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
 import { useAuth } from '../context/AuthContext';
@@ -50,16 +51,16 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ pb: 6 }}>
-      {/* Agent Hero Banner */}
+      {/* Policybazaar Signature Deep Navy Hero Banner */}
       <Paper
         elevation={0}
         sx={{
           p: { xs: 3, sm: 4 },
           mb: 4,
           borderRadius: 4,
-          background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
+          background: 'linear-gradient(135deg, #001e54 0%, #002970 100%)',
           color: '#ffffff',
-          boxShadow: '0 20px 40px -15px rgba(13, 148, 136, 0.3)',
+          boxShadow: '0 20px 40px -15px rgba(0, 41, 112, 0.35)',
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -68,24 +69,32 @@ export default function Dashboard() {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
             <Box
               sx={{
-                width: 54,
-                height: 54,
-                borderRadius: 3,
-                bgcolor: 'rgba(255, 255, 255, 0.15)',
+                width: 56,
+                height: 56,
+                borderRadius: 3.5,
+                bgcolor: 'rgba(255, 90, 0, 0.18)',
                 backdropFilter: 'blur(8px)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '1px solid rgba(255, 255, 255, 0.25)'
+                border: '1.5px solid rgba(255, 90, 0, 0.4)'
               }}
             >
-              <SupportAgentIcon sx={{ fontSize: 34, color: '#ffffff' }} />
+              <SupportAgentIcon sx={{ fontSize: 36, color: '#ff5a00' }} />
             </Box>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
-                Welcome, {user?.full_name?.replace(/\s*\([^)]*\)/, '')}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#ccfbf1', mt: 0.5, fontWeight: 500 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em' }}>
+                  Welcome, {user?.full_name?.replace(/\s*\([^)]*\)/, '')}
+                </Typography>
+                <Chip
+                  icon={<VerifiedIcon sx={{ color: '#ffffff !important', fontSize: 14 }} />}
+                  label="Verified Agent"
+                  size="small"
+                  sx={{ bgcolor: '#ff5a00', color: '#ffffff', fontWeight: 800, fontSize: '0.7rem' }}
+                />
+              </Box>
+              <Typography variant="body2" sx={{ color: '#93c5fd', mt: 0.5, fontWeight: 600 }}>
                 Insurance Agent Portal | Overview of customer policy coverages and client accounts.
               </Typography>
             </Box>
@@ -98,13 +107,14 @@ export default function Dashboard() {
             onClick={() => navigate('/policies/catalog')}
             sx={{
               color: '#ffffff',
-              bgcolor: '#1e3a8a',
-              fontWeight: 700,
+              bgcolor: '#ff5a00',
+              fontWeight: 800,
               px: 3,
-              py: 1.2,
+              py: 1.3,
               borderRadius: 2.5,
-              fontSize: '0.9rem',
-              '&:hover': { bgcolor: '#1e40af' }
+              fontSize: '0.92rem',
+              boxShadow: '0 8px 24px -4px rgba(255, 90, 0, 0.45)',
+              '&:hover': { bgcolor: '#e65100' }
             }}
           >
             Issue Policy to Customer
@@ -112,14 +122,14 @@ export default function Dashboard() {
         </Box>
       </Paper>
 
-      {/* Policy KPI Cards Grid */}
+      {/* Policybazaar KPI Cards Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Client Policies"
             value={stats.total_policies}
             icon={<ShieldIcon />}
-            color="#3b82f6"
+            color="#ff5a00"
             subtitle="Customer Policy Coverages"
           />
         </Grid>
@@ -128,7 +138,7 @@ export default function Dashboard() {
             title="Active Policies"
             value={stats.active_policies}
             icon={<VerifiedUserIcon />}
-            color="#10b981"
+            color="#00a896"
             subtitle="Active Policy Coverages"
           />
         </Grid>
@@ -137,7 +147,7 @@ export default function Dashboard() {
             title="Total Premiums"
             value={`₹${stats.total_premium_collected.toLocaleString('en-IN')}`}
             icon={<AccountBalanceWalletIcon />}
-            color="#0d9488"
+            color="#0284c7"
             subtitle="Annual Premium Value"
           />
         </Grid>
@@ -146,7 +156,7 @@ export default function Dashboard() {
             title="Client Accounts"
             value={customers.length}
             icon={<PeopleIcon />}
-            color="#8b5cf6"
+            color="#002970"
             subtitle="Registered Customer Profiles"
           />
         </Grid>
@@ -160,9 +170,9 @@ export default function Dashboard() {
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                  <ShieldIcon color="primary" /> Customer Policies ({policies.length})
+                  <ShieldIcon sx={{ color: '#ff5a00' }} /> Customer Policies ({policies.length})
                 </Typography>
-                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/policies')}>
+                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/policies')} sx={{ fontWeight: 700, color: '#ff5a00' }}>
                   View All
                 </Button>
               </Box>
@@ -170,7 +180,7 @@ export default function Dashboard() {
               {policies.length === 0 ? (
                 <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 3 }}>
                   <Typography variant="body2" color="text.secondary">No customer policies registered yet.</Typography>
-                  <Button variant="outlined" sx={{ mt: 2 }} onClick={() => navigate('/policies/catalog')}>
+                  <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={() => navigate('/policies/catalog')}>
                     Issue First Policy
                   </Button>
                 </Box>
@@ -179,19 +189,19 @@ export default function Dashboard() {
                   <Card key={p.id} sx={{ mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                     <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                           {p.title}
                         </Typography>
-                        <Chip label={p.status} color="success" size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
+                        <Chip label={p.status} color="success" size="small" sx={{ fontWeight: 800, borderRadius: 1.5 }} />
                       </Box>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 500 }}>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 600 }}>
                         Policy Number: <strong>{p.policy_number}</strong> | Client: <strong>{p.customer?.full_name || 'Customer'}</strong>
                       </Typography>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5, pt: 1.2, borderTop: '1px dashed', borderColor: 'divider' }}>
-                        <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
+                        <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800 }}>
                           Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
                           Premium: ₹{p.premium?.toLocaleString('en-IN')}/year
                         </Typography>
                       </Box>
@@ -211,7 +221,7 @@ export default function Dashboard() {
                 <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.2 }}>
                   <PeopleIcon color="info" /> Customer Directory ({customers.length})
                 </Typography>
-                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/users')}>
+                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/users')} sx={{ fontWeight: 700, color: '#ff5a00' }}>
                   View Directory
                 </Button>
               </Box>
@@ -224,7 +234,7 @@ export default function Dashboard() {
                 customers.slice(0, 4).map((c) => (
                   <Card key={c.id} sx={{ mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                     <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>
                         {c.full_name?.replace(/\s*\([^)]*\)/, '')}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">

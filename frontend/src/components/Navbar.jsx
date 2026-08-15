@@ -11,6 +11,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import EditIcon from '@mui/icons-material/Edit';
+import VerifiedIcon from '@mui/icons-material/Verified';
 import { useAuth } from '../context/AuthContext';
 import { useColorMode } from '../context/ThemeContext';
 import ProfileDialog from './ProfileDialog';
@@ -58,8 +59,8 @@ export default function Navbar({ onMobileMenuToggle }) {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(17, 24, 39, 0.85)' : 'rgba(255, 255, 255, 0.85)',
-          backdropFilter: 'blur(12px)',
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(8, 18, 38, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(16px)',
           borderBottom: '1px solid',
           borderColor: 'divider',
           color: 'text.primary',
@@ -67,8 +68,8 @@ export default function Navbar({ onMobileMenuToggle }) {
           transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}
       >
-        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3 } }}>
-          {/* Brand & Mobile Toggle */}
+        <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 }, height: 68 }}>
+          {/* Policybazaar Style Brand Logo & Mobile Toggle */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton
               color="inherit"
@@ -82,26 +83,26 @@ export default function Navbar({ onMobileMenuToggle }) {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, cursor: 'pointer' }}>
               <Box
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+                  width: 38,
+                  height: 38,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #002970 0%, #001e54 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)'
+                  boxShadow: '0 4px 14px rgba(0, 41, 112, 0.3)'
                 }}
               >
-                <ShieldIcon sx={{ color: '#ffffff', fontSize: 22 }} />
+                <ShieldIcon sx={{ color: '#ff5a00', fontSize: 24 }} />
               </Box>
-              <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
-                InsurCare <Typography component="span" variant="caption" sx={{ bgcolor: 'primary.light', color: '#ffffff', px: 1, py: 0.3, borderRadius: 1, fontWeight: 700, ml: 0.5 }}>AGENT PRO</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 900, color: (theme) => theme.palette.mode === 'dark' ? '#ffffff' : '#002970', letterSpacing: '-0.03em' }}>
+                InsurCare <Typography component="span" variant="caption" sx={{ bgcolor: '#ff5a00', color: '#ffffff', px: 1, py: 0.4, borderRadius: 1.2, fontWeight: 800, ml: 0.5, letterSpacing: '0.02em' }}>PRO</Typography>
               </Typography>
             </Box>
           </Box>
 
-          {/* Right Section: Notifications & User Profile */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* Right Section: Notifications & Policybazaar Styled Profile Header */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Notifications Dropdown */}
             <Tooltip title="Notifications">
               <IconButton
@@ -112,8 +113,8 @@ export default function Navbar({ onMobileMenuToggle }) {
                   transition: 'all 0.2s ease'
                 }}
               >
-                <Badge badgeContent={unreadCount} color="error">
-                  <NotificationsIcon sx={{ color: 'text.secondary', fontSize: 20 }} />
+                <Badge badgeContent={unreadCount} color="primary">
+                  <NotificationsIcon sx={{ color: 'text.secondary', fontSize: 22 }} />
                 </Badge>
               </IconButton>
             </Tooltip>
@@ -123,17 +124,17 @@ export default function Navbar({ onMobileMenuToggle }) {
               open={Boolean(anchorElNotif)}
               onClose={() => setAnchorElNotif(null)}
               PaperProps={{
-                sx: { width: 340, maxHeight: 420, p: 0, mt: 1.5, borderRadius: 3, boxShadow: '0 12px 32px rgba(0,0,0,0.2)' }
+                sx: { width: 350, maxHeight: 420, p: 0, mt: 1.5, borderRadius: 3, boxShadow: '0 16px 40px rgba(0,41,112,0.18)' }
               }}
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider' }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid', borderColor: 'divider', bgcolor: 'action.hover' }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                   Notifications ({notifications.length})
                 </Typography>
                 {unreadCount > 0 && (
-                  <Button size="small" startIcon={<CheckCircleIcon />} onClick={handleMarkAllRead}>
+                  <Button size="small" startIcon={<CheckCircleIcon />} onClick={handleMarkAllRead} sx={{ fontWeight: 700 }}>
                     Mark all read
                   </Button>
                 )}
@@ -149,7 +150,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                     <ListItemText
                       primary={n.title}
                       secondary={n.message}
-                      primaryTypographyProps={{ fontWeight: n.is_read ? 500 : 700, fontSize: '0.85rem' }}
+                      primaryTypographyProps={{ fontWeight: n.is_read ? 500 : 800, fontSize: '0.85rem' }}
                       secondaryTypographyProps={{ fontSize: '0.78rem', color: 'text.secondary', mt: 0.3 }}
                     />
                   </MenuItem>
@@ -157,7 +158,7 @@ export default function Navbar({ onMobileMenuToggle }) {
               )}
             </Menu>
 
-            {/* User Profile Avatar & Menu */}
+            {/* User Profile Avatar & Policybazaar Styled Menu */}
             {user && (
               <>
                 <Box
@@ -167,26 +168,26 @@ export default function Navbar({ onMobileMenuToggle }) {
                     alignItems: 'center',
                     gap: 1.2,
                     pl: 1,
-                    pr: 1.5,
-                    py: 0.6,
+                    pr: 1.8,
+                    py: 0.7,
                     borderRadius: 3,
                     cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: 'divider',
+                    border: '1.5px solid',
+                    borderColor: mode === 'dark' ? '#1e2d4a' : '#e5e7eb',
                     bgcolor: 'background.paper',
                     transition: 'all 0.2s ease',
-                    '&:hover': { bgcolor: 'action.hover' }
+                    '&:hover': { borderColor: '#ff5a00', bgcolor: 'action.hover' }
                   }}
                 >
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'info.main', fontSize: '0.85rem', fontWeight: 700 }}>
-                    {user.full_name?.charAt(0).toUpperCase() || 'A'}
+                  <Avatar sx={{ width: 34, height: 34, bgcolor: '#002970', color: '#ffffff', fontSize: '0.9rem', fontWeight: 800 }}>
+                    {user.full_name?.charAt(0).toUpperCase() || 'P'}
                   </Avatar>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, fontSize: '0.86rem', lineHeight: 1.2 }}>
                       {user.full_name?.replace(/\s*\([^)]*\)/, '')}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 700, fontSize: '0.7rem' }}>
-                      Insurance Agent Account
+                    <Typography variant="caption" sx={{ color: '#ff5a00', fontWeight: 700, fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 0.3 }}>
+                      <VerifiedIcon sx={{ fontSize: 12 }} /> Verified Agent
                     </Typography>
                   </Box>
                 </Box>
@@ -195,12 +196,12 @@ export default function Navbar({ onMobileMenuToggle }) {
                   anchorEl={anchorElUser}
                   open={Boolean(anchorElUser)}
                   onClose={() => setAnchorElUser(null)}
-                  PaperProps={{ sx: { width: 240, mt: 1.5, borderRadius: 3 } }}
+                  PaperProps={{ sx: { width: 250, mt: 1.5, borderRadius: 3 } }}
                   transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                   anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
                 >
-                  <Box sx={{ px: 2, py: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+                  <Box sx={{ px: 2.5, py: 2, bgcolor: 'action.hover' }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'secondary.main' }}>
                       {user.full_name?.replace(/\s*\([^)]*\)/, '')}
                     </Typography>
                     <Typography variant="caption" color="text.secondary" display="block">{user.email}</Typography>
@@ -209,21 +210,21 @@ export default function Navbar({ onMobileMenuToggle }) {
                   <Divider sx={{ my: 0.5 }} />
 
                   {/* Profile Edit Option */}
-                  <MenuItem onClick={() => { setAnchorElUser(null); setOpenProfileModal(true); }} sx={{ py: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 32, color: 'primary.main' }}>
+                  <MenuItem onClick={() => { setAnchorElUser(null); setOpenProfileModal(true); }} sx={{ py: 1.2 }}>
+                    <ListItemIcon sx={{ minWidth: 34, color: 'primary.main' }}>
                       <EditIcon fontSize="small" />
                     </ListItemIcon>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>View & Edit Profile</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>View & Edit Profile</Typography>
                   </MenuItem>
 
                   {/* Dark/Light Mode Switch Toggle */}
-                  <MenuItem onClick={toggleColorMode} sx={{ py: 1, display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }}>
+                  <MenuItem onClick={toggleColorMode} sx={{ py: 1.2, display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 32, color: mode === 'dark' ? '#f59e0b' : '#64748b' }}>
+                      <ListItemIcon sx={{ minWidth: 34, color: mode === 'dark' ? '#ff9800' : '#64748b' }}>
                         {mode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
                       </ListItemIcon>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {mode === 'dark' ? 'Dark Theme' : 'Light Theme'}
                       </Typography>
                     </Box>
                     <Switch
@@ -236,11 +237,11 @@ export default function Navbar({ onMobileMenuToggle }) {
                   <Divider sx={{ my: 0.5 }} />
 
                   {/* Logout Option */}
-                  <MenuItem onClick={() => { setAnchorElUser(null); logout(); }} sx={{ color: '#ef4444', py: 1 }}>
-                    <ListItemIcon sx={{ minWidth: 32, color: '#ef4444' }}>
+                  <MenuItem onClick={() => { setAnchorElUser(null); logout(); }} sx={{ color: '#dc2626', py: 1.2 }}>
+                    <ListItemIcon sx={{ minWidth: 34, color: '#dc2626' }}>
                       <LogoutIcon fontSize="small" />
                     </ListItemIcon>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>Sign Out</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>Sign Out</Typography>
                   </MenuItem>
                 </Menu>
               </>
@@ -249,7 +250,7 @@ export default function Navbar({ onMobileMenuToggle }) {
         </Toolbar>
       </AppBar>
 
-      {/* AGENT PROFILE VIEW & EDIT MODAL */}
+      {/* PROFILE VIEW & EDIT MODAL */}
       <ProfileDialog
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}

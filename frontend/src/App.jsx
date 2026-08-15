@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import PoliciesPage from './pages/PoliciesPage';
+import InsurancePlansPage from './pages/InsurancePlansPage';
 import ClaimsPage from './pages/ClaimsPage';
 import UsersPage from './pages/UsersPage';
 
@@ -35,8 +36,8 @@ function ProtectedLayout() {
         <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3 }, mb: 4, flexGrow: 1, px: { xs: 1.5, sm: 3 } }}>
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/policies/catalog" element={<InsurancePlansPage />} />
             <Route path="/policies" element={<PoliciesPage />} />
-            <Route path="/policies/catalog" element={<PoliciesPage />} />
             <Route path="/claims" element={<ClaimsPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

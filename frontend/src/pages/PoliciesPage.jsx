@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Grid, Card, CardContent, CardActions, Button,
   Chip, Tabs, Tab, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Alert
+  Dialog, DialogTitle, DialogContent, DialogActions, Alert, List, ListItem, ListItemIcon, ListItemText
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ShieldIcon from '@mui/icons-material/Shield';
+import StarIcon from '@mui/icons-material/Star';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,14 +16,8 @@ export default function PoliciesPage() {
   const [tab, setTab] = useState(0);
   const [catalog, setCatalog] = useState([]);
   const [policies, setPolicies] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [selectedCatalog, setSelectedCatalog] = useState(null);
-  const [targetCustomer, setTargetCustomer] = useState('');
   const [openPurchaseModal, setOpenPurchaseModal] = useState(false);
-  const [openCatalogModal, setOpenCatalogModal] = useState(false);
-  const [newCatalog, setNewCatalog] = useState({
-    code: '', title: '', type: 'Health', description: '', base_premium: '', max_coverage: '', term_months: 12
-  });
   const [msg, setMsg] = useState('');
 
   const loadData = async () => {
@@ -33,11 +28,6 @@ export default function PoliciesPage() {
       ]);
       setCatalog(resCat.data);
       setPolicies(resPol.data);
-
-      if (user?.role === 'AGENT' || user?.role === 'ADMIN') {
-        const resCust = await api.get('/users?role=CUSTOMER');
-        setCustomers(resCust.data);
-      }
     } catch (err) {
       console.error(err);
     }
@@ -52,12 +42,10 @@ export default function PoliciesPage() {
     setMsg('');
     try {
       await api.post('/policies/purchase', {
-        catalog_id: selectedCatalog.id,
-        customer_id: targetCustomer ? parseInt(targetCustomer) : undefined
+        catalog_id: selectedCatalog.id
       });
       setOpenPurchaseModal(false);
       setSelectedCatalog(null);
-      setTargetCustomer('');
       setTab(1); // Switch to Purchased Policies tab
       loadData();
     } catch (err) {
@@ -65,256 +53,219 @@ export default function PoliciesPage() {
     }
   };
 
-  const handleCreateCatalog = async (e) => {
-    e.preventDefault();
-    setMsg('');
-    try {
-      await api.post('/policy-catalog', {
-        ...newCatalog,
-        base_premium: parseFloat(newCatalog.base_premium),
-        max_coverage: parseFloat(newCatalog.max_coverage),
-        term_months: parseInt(newCatalog.term_months)
-      });
-      setOpenCatalogModal(false);
-      setNewCatalog({ code: '', title: '', type: 'Health', description: '', base_premium: '', max_coverage: '', term_months: 12 });
-      loadData();
-    } catch (err) {
-      setMsg(err.response?.data?.detail || 'Failed to create policy catalog template');
-    }
-  };
+  const featureList = [
+    'Cashless Claim Settlement Network',
+    '24x7 Emergency Customer Support',
+    'Instant Digital Policy Issuance',
+    'Tax Savings Benefits under Section 80D/80C'
+  ];
 
   return (
-    <Box sx={{ pb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
-            Policy Management
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Browse available insurance products or view active customer policies.
-          </Typography>
-        </Box>
-
-        {user?.role === 'ADMIN' && (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddCircleIcon />}
-            onClick={() => setOpenCatalogModal(true)}
-          >
-            Create Policy Catalog Template
-          </Button>
-        )}
+    <Box sx={{ pb: 6 }}>
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+          Insurance Policy Center
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          Browse available insurance coverage plans or view your active policies.
+        </Typography>
       </Box>
 
-      <Paper sx={{ mb: 3 }}>
-        <Tabs value={tab} onChange={(e, val) => setTab(val)} indicatorColor="primary" textColor="primary">
-          <Tab label="Available Policy Catalog" sx={{ fontWeight: 700 }} />
-          <Tab label={`Purchased Policies (${policies.length})`} sx={{ fontWeight: 700 }} />
+      <Paper elevation={0} sx={{ mb: 4, borderRadius: 3, p: 0.5, bgcolor: '#ffffff' }}>
+        <Tabs
+          value={tab}
+          onChange={(e, val) => setTab(val)}
+          indicatorColor="primary"
+          textColor="primary"
+          sx={{
+            '& .MuiTab-root': { py: 1.5, fontWeight: 700, borderRadius: 2, textTransform: 'none' }
+          }}
+        >
+          <Tab label="Explore Policy Catalog" />
+          <Tab label={`My Active Policies (${policies.length})`} />
         </Tabs>
       </Paper>
 
       {/* TAB 0: POLICY CATALOG */}
       {tab === 0 && (
         <Grid container spacing={3}>
-          {catalog.map((item) => (
-            <Grid item xs={12} sm={6} md={3} key={item.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                    <Chip label={item.type} color="primary" size="small" />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b' }}>
-                      {item.code}
-                    </Typography>
-                  </Box>
+          {catalog.map((item, index) => {
+            const isPopular = index === 0;
+            return (
+              <Grid item xs={12} sm={6} md={4} key={item.id}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justify: 'space-between',
+                    position: 'relative',
+                    border: isPopular ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                    boxShadow: isPopular ? '0 12px 30px -8px rgba(37, 99, 235, 0.2)' : undefined
+                  }}
+                >
+                  {isPopular && (
+                    <Chip
+                      icon={<StarIcon sx={{ fontSize: '14px !important', color: '#ffffff !important' }} />}
+                      label="MOST POPULAR"
+                      size="small"
+                      color="primary"
+                      sx={{
+                        position: 'absolute',
+                        top: 14,
+                        right: 14,
+                        fontWeight: 800,
+                        fontSize: '0.68rem',
+                        letterSpacing: '0.05em'
+                      }}
+                    />
+                  )}
 
-                  <Typography variant="h6" sx={{ fontWeight: 700, mt: 1, color: '#0f172a' }}>
-                    {item.title}
-                  </Typography>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <Chip
+                        label={item.type}
+                        size="small"
+                        sx={{ bgcolor: '#eff6ff', color: '#1e3a8a', fontWeight: 700, borderRadius: 1.5 }}
+                      />
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>
+                        {item.code}
+                      </Typography>
+                    </Box>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, minHeight: 48 }}>
-                    {item.description}
-                  </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>
+                      {item.title}
+                    </Typography>
 
-                  <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #e2e8f0' }}>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Max Coverage
+                    <Typography variant="body2" color="text.secondary" sx={{ minHeight: 48, mb: 2, lineHeight: 1.5 }}>
+                      {item.description}
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 800, color: '#059669' }}>
-                      ₹{item.max_coverage?.toLocaleString('en-IN')}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontWeight: 600, color: '#1e3a8a', mt: 0.5 }}>
-                      ₹{item.base_premium?.toLocaleString('en-IN')} / year ({item.term_months} mos)
-                    </Typography>
-                  </Box>
-                </CardContent>
 
-                <CardActions sx={{ p: 2, pt: 0 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<ShoppingCartIcon />}
-                    onClick={() => { setSelectedCatalog(item); setOpenPurchaseModal(true); }}
-                  >
-                    Purchase Policy
-                  </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
+                    <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, mb: 2, border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 600 }}>
+                        Maximum Coverage Limit
+                      </Typography>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: '#059669', my: 0.5, letterSpacing: '-0.02em' }}>
+                        ₹{item.max_coverage?.toLocaleString('en-IN')}
+                      </Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                        ₹{item.base_premium?.toLocaleString('en-IN')} <Typography component="span" variant="caption" color="text.secondary">/ year ({item.term_months} months term)</Typography>
+                      </Typography>
+                    </Box>
+
+                    <List size="small" disablePadding>
+                      {featureList.map((feat, i) => (
+                        <ListItem key={i} disablePadding sx={{ py: 0.4 }}>
+                          <ListItemIcon sx={{ minWidth: 24, color: '#10b981' }}>
+                            <CheckCircleIcon sx={{ fontSize: 16 }} />
+                          </ListItemIcon>
+                          <ListItemText primary={feat} primaryTypographyProps={{ fontSize: '0.8rem', color: '#475569', fontWeight: 500 }} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </CardContent>
+
+                  <CardActions sx={{ p: 3, pt: 0 }}>
+                    <Button
+                      fullWidth
+                      variant={isPopular ? 'contained' : 'outlined'}
+                      color="primary"
+                      size="large"
+                      startIcon={<ShoppingCartIcon />}
+                      onClick={() => { setSelectedCatalog(item); setOpenPurchaseModal(true); }}
+                      sx={{ py: 1.2, fontWeight: 700 }}
+                    >
+                      Buy Insurance Plan
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            );
+          })}
         </Grid>
       )}
 
       {/* TAB 1: PURCHASED POLICIES */}
       {tab === 1 && (
-        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto' }}>
+        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2 }}>
           <Table>
-            <TableHead sx={{ bgcolor: '#f8fafc' }}>
+            <TableHead>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700 }}>Policy Number</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Title & Type</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Coverage (₹)</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Premium (₹)</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Expiry Date</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
+                <TableCell>Policy Number</TableCell>
+                <TableCell>Title & Type</TableCell>
+                <TableCell>Coverage (₹)</TableCell>
+                <TableCell>Premium (₹)</TableCell>
+                <TableCell>Validity Term</TableCell>
+                <TableCell>Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {policies.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell sx={{ fontWeight: 700 }}>{p.policy_number}</TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{p.title}</Typography>
-                    <Typography variant="caption" color="text.secondary">{p.type}</Typography>
-                  </TableCell>
-                  <TableCell>{p.customer?.full_name || 'N/A'}</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#059669' }}>
-                    ₹{p.coverage_amount?.toLocaleString('en-IN')}
-                  </TableCell>
-                  <TableCell>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
-                  <TableCell>{new Date(p.end_date).toLocaleDateString('en-IN')}</TableCell>
-                  <TableCell>
-                    <Chip label={p.status} color="success" size="small" />
+              {policies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                    <Typography variant="body2" color="text.secondary">No purchased policies found.</Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                policies.map((p) => (
+                  <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
+                    <TableCell sx={{ fontWeight: 800, color: '#1e3a8a' }}>{p.policy_number}</TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{p.title}</Typography>
+                      <Typography variant="caption" color="text.secondary">{p.type}</Typography>
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 800, color: '#059669' }}>
+                      ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
+                    <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
+                      {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={p.status} color="success" size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
       )}
 
-      {/* PURCHASE MODAL */}
+      {/* PURCHASE CONFIRMATION MODAL */}
       <Dialog open={openPurchaseModal} onClose={() => setOpenPurchaseModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Confirm Policy Purchase</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Confirm Policy Purchase</DialogTitle>
         <DialogContent>
-          {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+          {msg && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{msg}</Alert>}
           {selectedCatalog && (
-            <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
-                {selectedCatalog.title}
+            <Box sx={{ p: 2.5, bgcolor: '#f8fafc', borderRadius: 3, mb: 2, border: '1px solid #e2e8f0' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                <ShieldIcon color="primary" />
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
+                  {selectedCatalog.title}
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                {selectedCatalog.description}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Base Premium: ₹{selectedCatalog.base_premium?.toLocaleString('en-IN')}/yr | Coverage: ₹{selectedCatalog.max_coverage?.toLocaleString('en-IN')}
-              </Typography>
+              <Box sx={{ pt: 1.5, borderTop: '1px dashed #cbd5e1', display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569' }}>Annual Premium:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#059669' }}>
+                  ₹{selectedCatalog.base_premium?.toLocaleString('en-IN')}
+                </Typography>
+              </Box>
             </Box>
           )}
-
-          {(user?.role === 'AGENT' || user?.role === 'ADMIN') && (
-            <TextField
-              select
-              fullWidth
-              label="Select Customer to Assign Policy"
-              value={targetCustomer}
-              onChange={(e) => setTargetCustomer(e.target.value)}
-              margin="normal"
-              required
-            >
-              {customers.map((c) => (
-                <MenuItem key={c.id} value={c.id}>
-                  {c.full_name} ({c.email})
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center' }}>
+            Policy coverage will be activated immediately upon confirmation.
+          </Typography>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
+        <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpenPurchaseModal(false)}>Cancel</Button>
-          <Button onClick={handlePurchase} variant="contained" startIcon={<CheckCircleIcon />}>
-            Confirm Purchase
+          <Button onClick={handlePurchase} variant="contained" color="primary" startIcon={<CheckCircleIcon />} sx={{ px: 3 }}>
+            Confirm & Activate
           </Button>
         </DialogActions>
-      </Dialog>
-
-      {/* CREATE CATALOG TEMPLATE MODAL (ADMIN ONLY) */}
-      <Dialog open={openCatalogModal} onClose={() => setOpenCatalogModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Create Policy Catalog Template</DialogTitle>
-        <Box component="form" onSubmit={handleCreateCatalog}>
-          <DialogContent>
-            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
-            <TextField
-              fullWidth
-              label="Policy Code (e.g., POL-HLTH-05)"
-              value={newCatalog.code}
-              onChange={(e) => setNewCatalog({ ...newCatalog, code: e.target.value })}
-              margin="dense"
-              required
-            />
-            <TextField
-              fullWidth
-              label="Policy Title"
-              value={newCatalog.title}
-              onChange={(e) => setNewCatalog({ ...newCatalog, title: e.target.value })}
-              margin="dense"
-              required
-            />
-            <TextField
-              select
-              fullWidth
-              label="Insurance Type"
-              value={newCatalog.type}
-              onChange={(e) => setNewCatalog({ ...newCatalog, type: e.target.value })}
-              margin="dense"
-            >
-              <MenuItem value="Health">Health</MenuItem>
-              <MenuItem value="Auto">Auto</MenuItem>
-              <MenuItem value="Home">Home</MenuItem>
-              <MenuItem value="Life">Life</MenuItem>
-            </TextField>
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Description & Coverage Details"
-              value={newCatalog.description}
-              onChange={(e) => setNewCatalog({ ...newCatalog, description: e.target.value })}
-              margin="dense"
-              required
-            />
-            <TextField
-              fullWidth
-              type="number"
-              label="Base Premium Amount (₹)"
-              value={newCatalog.base_premium}
-              onChange={(e) => setNewCatalog({ ...newCatalog, base_premium: e.target.value })}
-              margin="dense"
-              required
-            />
-            <TextField
-              fullWidth
-              type="number"
-              label="Max Coverage Limit (₹)"
-              value={newCatalog.max_coverage}
-              onChange={(e) => setNewCatalog({ ...newCatalog, max_coverage: e.target.value })}
-              margin="dense"
-              required
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenCatalogModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">Create Catalog Item</Button>
-          </DialogActions>
-        </Box>
       </Dialog>
     </Box>
   );

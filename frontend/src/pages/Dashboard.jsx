@@ -9,22 +9,17 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import AddIcon from '@mui/icons-material/Add';
-import GavelIcon from '@mui/icons-material/Gavel';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import {
-  PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar,
-  XAxis, YAxis, Tooltip, Legend
-} from 'recharts';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
-import ClaimRiskChip from '../components/ClaimRiskChip';
 import DocumentViewerDialog from '../components/DocumentViewerDialog';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [policies, setPolicies] = useState([]);
@@ -35,9 +30,6 @@ export default function Dashboard() {
   const [openClaimModal, setOpenClaimModal] = useState(false);
   const [claimForm, setClaimForm] = useState({ policy_id: '', reason: '', description: '', amount: '', incident_date: '' });
   const [selectedDocClaim, setSelectedDocClaim] = useState(null);
-  const [openReviewModal, setOpenReviewModal] = useState(false);
-  const [selectedReviewClaim, setSelectedReviewClaim] = useState(null);
-  const [reviewForm, setReviewForm] = useState({ decision: 'APPROVED', remarks: '' });
   const [msg, setMsg] = useState('');
 
   const loadData = async () => {
@@ -79,61 +71,88 @@ export default function Dashboard() {
     }
   };
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedReviewClaim) return;
-    try {
-      await api.post(`/claims/${selectedReviewClaim.id}/review`, reviewForm);
-      setOpenReviewModal(false);
-      setSelectedReviewClaim(null);
-      setReviewForm({ decision: 'APPROVED', remarks: '' });
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   if (loading || !stats) {
     return <Typography sx={{ p: 4 }}>Loading dashboard statistics...</Typography>;
   }
 
-  // Chart data formatting
-  const pieData = Object.entries(stats.claims_by_status || {}).map(([name, value]) => ({ name, value }));
-  const COLORS = ['#3b82f6', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
-
-  const barData = [
-    { name: 'Financials (₹)', Premiums: stats.total_premium_collected, ClaimsPaid: stats.total_claim_amount }
-  ];
-
-  const canSubmitClaim = user?.role === 'CUSTOMER' || user?.role === 'ADMIN' || user?.role === 'AGENT';
+  const getStatusChip = (status) => {
+    const map = {
+      APPROVED: { label: 'Approved', bg: '#dcfce7', color: '#166534' },
+      UNDER_REVIEW: { label: 'Under Review', bg: '#fef3c7', color: '#92400e' },
+      SUBMITTED: { label: 'Submitted', bg: '#dbeafe', color: '#1e40af' },
+      REJECTED: { label: 'Rejected', bg: '#fee2e2', color: '#991b1b' },
+      DOCUMENTS_REQUIRED: { label: 'Docs Required', bg: '#f3e8ff', color: '#6b21a8' },
+    };
+    const s = map[status] || { label: status, bg: '#f1f5f9', color: '#475569' };
+    return (
+      <Chip
+        label={s.label}
+        size="small"
+        sx={{ bgcolor: s.bg, color: s.color, fontWeight: 700, borderRadius: 1.5, fontSize: '0.75rem' }}
+      />
+    );
+  };
 
   return (
     <Box sx={{ pb: 6 }}>
-      {/* Welcome Banner */}
-      <Paper elevation={0} sx={{ p: 3, mb: 4, bgcolor: '#1e3a8a', color: '#ffffff', borderRadius: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <VerifiedUserIcon sx={{ fontSize: 36, color: '#60a5fa' }} />
+      {/* Sleek Hero Card Banner */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, sm: 4 },
+          mb: 4,
+          borderRadius: 4,
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%)',
+          color: '#ffffff',
+          boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.3)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2, position: 'relative', zIndex: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+            <Box
+              sx={{
+                width: 54,
+                height: 54,
+                borderRadius: 3,
+                bgcolor: 'rgba(255, 255, 255, 0.12)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}
+            >
+              <VerifiedUserIcon sx={{ fontSize: 32, color: '#60a5fa' }} />
+            </Box>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
                 Welcome, {user?.full_name}
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.85, mt: 0.2 }}>
-                Role: <strong>{user?.role?.replace('_', ' ')}</strong> | InsurCare Policy & Claims Portal
+              <Typography variant="body2" sx={{ color: '#93c5fd', mt: 0.5, fontWeight: 500 }}>
+                Manage your active insurance policies, submit claim requests, and track reviews.
               </Typography>
             </Box>
           </Box>
-          {canSubmitClaim && (
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenClaimModal(true)}
-              sx={{ color: '#ffffff', fontWeight: 700 }}
-            >
-              Submit New Claim
-            </Button>
-          )}
+
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenClaimModal(true)}
+            sx={{
+              color: '#ffffff',
+              fontWeight: 700,
+              px: 3,
+              py: 1.2,
+              borderRadius: 2.5,
+              fontSize: '0.9rem',
+              boxShadow: '0 8px 20px -4px rgba(13, 148, 136, 0.5)'
+            }}
+          >
+            File New Claim
+          </Button>
         </Box>
       </Paper>
 
@@ -145,7 +164,7 @@ export default function Dashboard() {
             value={stats.total_policies}
             icon={<ShieldIcon />}
             color="#3b82f6"
-            subtitle={`${stats.active_policies} Active Policies`}
+            subtitle={`${stats.active_policies} Active Policy Coverages`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -154,7 +173,7 @@ export default function Dashboard() {
             value={stats.total_claims}
             icon={<AssignmentIcon />}
             color="#f59e0b"
-            subtitle={`${stats.pending_claims} Pending Review`}
+            subtitle={`${stats.pending_claims} Under Review`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -163,7 +182,7 @@ export default function Dashboard() {
             value={`${stats.loss_ratio}%`}
             icon={<AccountBalanceWalletIcon />}
             color="#10b981"
-            subtitle={`₹${stats.total_claim_amount.toLocaleString('en-IN')} Claims Paid`}
+            subtitle={`₹${stats.total_claim_amount.toLocaleString('en-IN')} Approved Claims`}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -172,177 +191,115 @@ export default function Dashboard() {
             value={stats.risk_level_distribution?.HIGH || 0}
             icon={<WarningAmberIcon />}
             color="#ef4444"
-            subtitle="Flagged by Risk Engine"
+            subtitle="Risk Engine Evaluation"
           />
         </Grid>
       </Grid>
 
-      {/* Charts Section (Admin & Officers) */}
-      {(user?.role === 'ADMIN' || user?.role === 'CLAIMS_OFFICER') && (
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 3, height: 350 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                Claims Status Distribution
-              </Typography>
-              <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 3, height: 350 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                Premiums Collected vs Claims Paid (₹)
-              </Typography>
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={barData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="Premiums" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="ClaimsPaid" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-        </Grid>
-      )}
+      {/* CUSTOMER POLICIES & CLAIMS PANELS */}
+      <Grid container spacing={3}>
+        {/* Active Policies Panel */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                  <ShieldIcon color="primary" /> My Active Policies ({policies.length})
+                </Typography>
+                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/policies')}>
+                  View All
+                </Button>
+              </Box>
 
-      {/* CLAIMS OFFICER & ADMIN WORKBENCH */}
-      {(user?.role === 'CLAIMS_OFFICER' || user?.role === 'ADMIN') && (
-        <Paper sx={{ p: 3, borderRadius: 3, mb: 4 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-            Claims Review Workbench ({claims.length})
-          </Typography>
-          <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto' }}>
-            <Table>
-              <TableHead sx={{ bgcolor: '#f8fafc' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Claim #</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Customer</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Reason</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Amount (₹)</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Risk Score & Level</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {claims.slice(0, 8).map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell sx={{ fontWeight: 700 }}>{c.claim_number}</TableCell>
-                    <TableCell>{c.customer?.full_name}</TableCell>
-                    <TableCell>{c.reason}</TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>₹{c.amount?.toLocaleString('en-IN')}</TableCell>
-                    <TableCell>
-                      <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={c.status.replace('_', ' ')}
-                        color={c.status === 'APPROVED' ? 'success' : c.status === 'REJECTED' ? 'error' : 'warning'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        <Button size="small" variant="outlined" startIcon={<FolderSharedIcon />} onClick={() => setSelectedDocClaim(c)}>
-                          Docs ({c.documents?.length || 0})
-                        </Button>
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<GavelIcon />}
-                          onClick={() => { setSelectedReviewClaim(c); setOpenReviewModal(true); }}
-                        >
-                          Review
-                        </Button>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-
-      {/* CUSTOMER & AGENT POLICIES / CLAIMS PANELS */}
-      {(user?.role === 'CUSTOMER' || user?.role === 'AGENT' || user?.role === 'ADMIN') && (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ShieldIcon color="primary" /> {user?.role === 'AGENT' ? 'Customer Policies Portfolio' : 'Active Policies'} ({policies.length})
-              </Typography>
-              {policies.slice(0, 6).map((p) => (
-                <Card key={p.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>
-                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
-                        {p.title}
-                      </Typography>
-                      <Chip label={p.status} color="success" size="small" />
-                    </Box>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Policy #: {p.policy_number} | Customer: {p.customer?.full_name || 'N/A'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')} | Premium: ₹{p.premium?.toLocaleString('en-IN')}/yr
-                    </Typography>
-                  </CardContent>
-                </Card>
-              ))}
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, borderRadius: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ReceiptLongIcon color="warning" /> {user?.role === 'AGENT' ? 'Customer Claims Overview' : 'Submitted Claims'} ({claims.length})
-              </Typography>
-              {claims.slice(0, 6).map((c) => (
-                <Card key={c.id} sx={{ mb: 2, bgcolor: '#f8fafc' }}>
-                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                        {c.claim_number} - {c.reason}
-                      </Typography>
-                      <Chip label={c.status.replace('_', ' ')} color={c.status === 'APPROVED' ? 'success' : 'warning'} size="small" />
-                    </Box>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Customer: {c.customer?.full_name} | Amount: ₹{c.amount?.toLocaleString('en-IN')}
-                    </Typography>
-                    {c.reviews?.length > 0 && (
-                      <Alert severity="info" sx={{ mt: 1, py: 0, px: 1 }}>
-                        <Typography variant="caption">
-                          Officer Remarks: {c.reviews[c.reviews.length - 1].remarks}
+              {policies.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+                  <Typography variant="body2" color="text.secondary">No active policies found.</Typography>
+                  <Button variant="outlined" sx={{ mt: 2 }} onClick={() => navigate('/policies/catalog')}>
+                    Browse Policy Catalog
+                  </Button>
+                </Box>
+              ) : (
+                policies.slice(0, 4).map((p) => (
+                  <Card key={p.id} sx={{ mb: 2, bgcolor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                    <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                          {p.title}
                         </Typography>
-                      </Alert>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </Paper>
-          </Grid>
+                        <Chip label={p.status} color="success" size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 500 }}>
+                        Policy #: <strong>{p.policy_number}</strong> | Type: {p.type}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5, pt: 1.2, borderTop: '1px dashed #f1f5f9' }}>
+                        <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700 }}>
+                          Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                          Expires: {new Date(p.end_date).toLocaleDateString('en-IN')}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </Box>
+          </Paper>
         </Grid>
-      )}
+
+        {/* Submitted Claims Panel */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                  <ReceiptLongIcon color="warning" /> My Claims Tracker ({claims.length})
+                </Typography>
+                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/claims')}>
+                  View All
+                </Button>
+              </Box>
+
+              {claims.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+                  <Typography variant="body2" color="text.secondary">No submitted claims found.</Typography>
+                  <Button variant="contained" sx={{ mt: 2 }} startIcon={<AddIcon />} onClick={() => setOpenClaimModal(true)}>
+                    File First Claim
+                  </Button>
+                </Box>
+              ) : (
+                claims.slice(0, 4).map((c) => (
+                  <Card key={c.id} sx={{ mb: 2, bgcolor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                    <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                          {c.claim_number} - {c.reason}
+                        </Typography>
+                        {getStatusChip(c.status)}
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 500 }}>
+                        Claim Amount: <strong>₹{c.amount?.toLocaleString('en-IN')}</strong> | Incident Date: {new Date(c.incident_date).toLocaleDateString('en-IN')}
+                      </Typography>
+                      {c.reviews?.length > 0 && (
+                        <Alert severity="info" sx={{ mt: 1.5, py: 0.5, px: 1.5, borderRadius: 2, fontSize: '0.78rem' }}>
+                          <strong>Officer Remark:</strong> {c.reviews[c.reviews.length - 1].remarks}
+                        </Alert>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
 
       {/* SUBMIT CLAIM DIALOG */}
       <Dialog open={openClaimModal} onClose={() => setOpenClaimModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Submit New Claim</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Submit New Insurance Claim</DialogTitle>
         <Box component="form" onSubmit={handleClaimSubmit}>
           <DialogContent>
-            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+            {msg && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{msg}</Alert>}
             <TextField
               select
               fullWidth
@@ -364,6 +321,7 @@ export default function Dashboard() {
               value={claimForm.reason}
               onChange={(e) => setClaimForm({ ...claimForm, reason: e.target.value })}
               margin="normal"
+              placeholder="e.g. Hospitalization Expense, Vehicle Repair"
               required
             />
             <TextField
@@ -396,65 +354,11 @@ export default function Dashboard() {
               required
             />
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 3 }}>
             <Button onClick={() => setOpenClaimModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">Submit Claim</Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
-
-      {/* OFFICER REVIEW DIALOG */}
-      <Dialog open={openReviewModal} onClose={() => setOpenReviewModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          Review Claim {selectedReviewClaim?.claim_number}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleReviewSubmit}>
-          <DialogContent>
-            {selectedReviewClaim && (
-              <Box sx={{ mb: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  Reason: {selectedReviewClaim.reason}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Claimed Amount: ₹{selectedReviewClaim.amount?.toLocaleString('en-IN')}
-                </Typography>
-                <Box sx={{ mt: 1 }}>
-                  <ClaimRiskChip
-                    score={selectedReviewClaim.risk_score}
-                    level={selectedReviewClaim.risk_level}
-                    flags={selectedReviewClaim.fraud_flags}
-                  />
-                </Box>
-              </Box>
-            )}
-
-            <TextField
-              select
-              fullWidth
-              label="Review Decision"
-              value={reviewForm.decision}
-              onChange={(e) => setReviewForm({ ...reviewForm, decision: e.target.value })}
-              margin="normal"
-            >
-              <MenuItem value="APPROVED">Approve Claim</MenuItem>
-              <MenuItem value="REJECTED">Reject Claim</MenuItem>
-              <MenuItem value="DOCUMENTS_REQUIRED">Request Additional Documents</MenuItem>
-            </TextField>
-
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Officer Remarks / Justification"
-              value={reviewForm.remarks}
-              onChange={(e) => setReviewForm({ ...reviewForm, remarks: e.target.value })}
-              margin="normal"
-              required
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenReviewModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained" color="primary">Submit Review</Button>
+            <Button type="submit" variant="contained" color="primary" sx={{ px: 3 }}>
+              Submit Claim
+            </Button>
           </DialogActions>
         </Box>
       </Dialog>

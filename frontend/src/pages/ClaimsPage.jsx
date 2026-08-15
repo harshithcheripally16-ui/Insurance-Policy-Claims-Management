@@ -4,7 +4,6 @@ import {
   Chip, Button, MenuItem, TextField, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert
 } from '@mui/material';
-import GavelIcon from '@mui/icons-material/Gavel';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import AddIcon from '@mui/icons-material/Add';
 import ClaimRiskChip from '../components/ClaimRiskChip';
@@ -18,11 +17,8 @@ export default function ClaimsPage() {
   const [policies, setPolicies] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedDocClaim, setSelectedDocClaim] = useState(null);
-  const [selectedReviewClaim, setSelectedReviewClaim] = useState(null);
-  const [openReviewModal, setOpenReviewModal] = useState(false);
   const [openClaimModal, setOpenClaimModal] = useState(false);
   const [claimForm, setClaimForm] = useState({ policy_id: '', reason: '', description: '', amount: '', incident_date: '' });
-  const [reviewForm, setReviewForm] = useState({ decision: 'APPROVED', remarks: '' });
   const [msg, setMsg] = useState('');
 
   const loadData = async () => {
@@ -61,46 +57,46 @@ export default function ClaimsPage() {
     }
   };
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedReviewClaim) return;
-    try {
-      await api.post(`/claims/${selectedReviewClaim.id}/review`, reviewForm);
-      setOpenReviewModal(false);
-      setSelectedReviewClaim(null);
-      setReviewForm({ decision: 'APPROVED', remarks: '' });
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
+  const getStatusChip = (status) => {
+    const map = {
+      APPROVED: { label: 'Approved', bg: '#dcfce7', color: '#166534' },
+      UNDER_REVIEW: { label: 'Under Review', bg: '#fef3c7', color: '#92400e' },
+      SUBMITTED: { label: 'Submitted', bg: '#dbeafe', color: '#1e40af' },
+      REJECTED: { label: 'Rejected', bg: '#fee2e2', color: '#991b1b' },
+      DOCUMENTS_REQUIRED: { label: 'Docs Required', bg: '#f3e8ff', color: '#6b21a8' },
+    };
+    const s = map[status] || { label: status, bg: '#f1f5f9', color: '#475569' };
+    return (
+      <Chip
+        label={s.label}
+        size="small"
+        sx={{ bgcolor: s.bg, color: s.color, fontWeight: 700, borderRadius: 1.5, fontSize: '0.75rem' }}
+      />
+    );
   };
 
-  const isOfficerOrAdmin = user?.role === 'CLAIMS_OFFICER' || user?.role === 'ADMIN';
-  const canSubmitClaim = user?.role === 'CUSTOMER' || user?.role === 'ADMIN' || user?.role === 'AGENT';
-
   return (
-    <Box sx={{ pb: 4 }}>
+    <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
-            Claims Workbench & History
+          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+            Submit & Track Claims
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Manage submitted claims, examine risk scores, and process approval decisions.
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            File new insurance claim requests and upload supporting document attachments.
           </Typography>
         </Box>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-          {canSubmitClaim && (
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenClaimModal(true)}
-            >
-              Submit Claim
-            </Button>
-          )}
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenClaimModal(true)}
+            sx={{ py: 1, px: 2.5, fontWeight: 700 }}
+          >
+            File New Claim
+          </Button>
 
           <TextField
             select
@@ -108,7 +104,7 @@ export default function ClaimsPage() {
             label="Filter by Status"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            sx={{ width: 180 }}
+            sx={{ width: 170 }}
           >
             <MenuItem value="">All Statuses</MenuItem>
             <MenuItem value="SUBMITTED">Submitted</MenuItem>
@@ -120,79 +116,70 @@ export default function ClaimsPage() {
         </Box>
       </Box>
 
-      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', p: { xs: 1, sm: 3 }, borderRadius: 3 }}>
+      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', p: { xs: 1, sm: 2 }, borderRadius: 4 }}>
         <Table>
-          <TableHead sx={{ bgcolor: '#f8fafc' }}>
+          <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>Claim #</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Customer Name</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Policy Ref</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Reason & Description</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Amount (₹)</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Risk Score & Level</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 700, textAlign: 'right' }}>Actions</TableCell>
+              <TableCell>Claim #</TableCell>
+              <TableCell>Policy Reference</TableCell>
+              <TableCell>Reason & Description</TableCell>
+              <TableCell>Claim Amount (₹)</TableCell>
+              <TableCell>Risk Score</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Document Attachments</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {claims.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell sx={{ fontWeight: 700 }}>{c.claim_number}</TableCell>
-                <TableCell>{c.customer?.full_name || 'Customer'}</TableCell>
-                <TableCell>{c.policy?.policy_number || 'N/A'}</TableCell>
-                <TableCell>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{c.reason}</Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 220, noWrap: true }}>
-                    {c.description}
-                  </Typography>
+            {claims.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">No claim requests submitted yet.</Typography>
                 </TableCell>
-                <TableCell sx={{ fontWeight: 700, color: '#0f172a' }}>
-                  ₹{c.amount?.toLocaleString('en-IN')}
-                </TableCell>
-                <TableCell>
-                  <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={c.status.replace('_', ' ')}
-                    color={c.status === 'APPROVED' ? 'success' : c.status === 'REJECTED' ? 'error' : 'warning'}
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+              </TableRow>
+            ) : (
+              claims.map((c) => (
+                <TableRow key={c.id} hover sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
+                  <TableCell sx={{ fontWeight: 800, color: '#1e3a8a' }}>{c.claim_number}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{c.policy?.policy_number || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>{c.reason}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 240, noWrap: true }}>
+                      {c.description}
+                    </Typography>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>
+                    ₹{c.amount?.toLocaleString('en-IN')}
+                  </TableCell>
+                  <TableCell>
+                    <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
+                  </TableCell>
+                  <TableCell>
+                    {getStatusChip(c.status)}
+                  </TableCell>
+                  <TableCell align="right">
                     <Button
                       size="small"
                       variant="outlined"
                       startIcon={<AttachFileIcon />}
                       onClick={() => setSelectedDocClaim(c)}
+                      sx={{ borderRadius: 2 }}
                     >
-                      Docs ({c.documents?.length || 0})
+                      Files ({c.documents?.length || 0})
                     </Button>
-                    {isOfficerOrAdmin && (
-                      <Button
-                        size="small"
-                        variant="contained"
-                        startIcon={<GavelIcon />}
-                        onClick={() => { setSelectedReviewClaim(c); setOpenReviewModal(true); }}
-                      >
-                        Review
-                      </Button>
-                    )}
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
 
       {/* SUBMIT CLAIM DIALOG */}
       <Dialog open={openClaimModal} onClose={() => setOpenClaimModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Submit New Claim</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Submit New Insurance Claim</DialogTitle>
         <Box component="form" onSubmit={handleClaimSubmit}>
           <DialogContent>
-            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+            {msg && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{msg}</Alert>}
             <TextField
               select
               fullWidth
@@ -204,7 +191,7 @@ export default function ClaimsPage() {
             >
               {policies.map((p) => (
                 <MenuItem key={p.id} value={p.id}>
-                  {p.title} ({p.policy_number}) - Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                  {p.title} ({p.policy_number}) - Max Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                 </MenuItem>
               ))}
             </TextField>
@@ -214,6 +201,7 @@ export default function ClaimsPage() {
               value={claimForm.reason}
               onChange={(e) => setClaimForm({ ...claimForm, reason: e.target.value })}
               margin="normal"
+              placeholder="e.g. Hospitalization Expense, Vehicle Damage"
               required
             />
             <TextField
@@ -246,65 +234,11 @@ export default function ClaimsPage() {
               required
             />
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 3 }}>
             <Button onClick={() => setOpenClaimModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">Submit Claim</Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
-
-      {/* OFFICER REVIEW DIALOG */}
-      <Dialog open={openReviewModal} onClose={() => setOpenReviewModal(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          Review Claim {selectedReviewClaim?.claim_number}
-        </DialogTitle>
-        <Box component="form" onSubmit={handleReviewSubmit}>
-          <DialogContent>
-            {selectedReviewClaim && (
-              <Box sx={{ mb: 2, p: 2, bgcolor: '#f8fafc', borderRadius: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-                  Reason: {selectedReviewClaim.reason}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Claimed Amount: ₹{selectedReviewClaim.amount?.toLocaleString('en-IN')}
-                </Typography>
-                <Box sx={{ mt: 1 }}>
-                  <ClaimRiskChip
-                    score={selectedReviewClaim.risk_score}
-                    level={selectedReviewClaim.risk_level}
-                    flags={selectedReviewClaim.fraud_flags}
-                  />
-                </Box>
-              </Box>
-            )}
-
-            <TextField
-              select
-              fullWidth
-              label="Review Decision"
-              value={reviewForm.decision}
-              onChange={(e) => setReviewForm({ ...reviewForm, decision: e.target.value })}
-              margin="normal"
-            >
-              <MenuItem value="APPROVED">Approve Claim</MenuItem>
-              <MenuItem value="REJECTED">Reject Claim</MenuItem>
-              <MenuItem value="DOCUMENTS_REQUIRED">Request Additional Documents</MenuItem>
-            </TextField>
-
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Officer Remarks / Justification"
-              value={reviewForm.remarks}
-              onChange={(e) => setReviewForm({ ...reviewForm, remarks: e.target.value })}
-              margin="normal"
-              required
-            />
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setOpenReviewModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">Submit Review</Button>
+            <Button type="submit" variant="contained" color="primary" sx={{ px: 3 }}>
+              Submit Claim Request
+            </Button>
           </DialogActions>
         </Box>
       </Dialog>

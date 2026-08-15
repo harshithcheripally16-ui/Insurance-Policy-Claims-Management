@@ -229,7 +229,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                     <Switch
                       size="small"
                       checked={mode === 'dark'}
-                      onChange={(e) => { e.stopPropagation(); toggleColorMode(); }}
+                      sx={{ pointerEvents: 'none' }}
                     />
                   </MenuItem>
 

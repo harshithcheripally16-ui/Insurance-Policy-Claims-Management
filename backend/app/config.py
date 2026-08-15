@@ -8,6 +8,14 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./insurance.db"
     UPLOAD_DIR: str = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 
+    # SMTP Email Configuration
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    EMAILS_FROM: str = "InsurCare PRO <noreply@insure.com>"
+    SMTP_TLS: bool = True
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

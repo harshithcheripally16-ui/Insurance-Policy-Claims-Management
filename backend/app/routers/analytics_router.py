@@ -70,6 +70,7 @@ def get_notifications(
         Notification.user_id == current_user.id
     ).order_by(Notification.id.desc()).limit(20).all()
 
+@router.patch("/notifications/mark-read")
 @router.patch("/notifications/read-all")
 def mark_notifications_read(
     db: Session = Depends(get_db),

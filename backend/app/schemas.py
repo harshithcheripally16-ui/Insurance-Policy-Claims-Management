@@ -18,6 +18,33 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+
+class SendOTPRequest(BaseModel):
+    email: EmailStr
+    purpose: str = "REGISTRATION" # REGISTRATION, FORGOT_PASSWORD
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    code: str
+    purpose: str = "REGISTRATION"
+
+class RegisterWithOTPRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: str
+    otp_code: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp_code: str
+    new_password: str
+
 class UserResponse(UserBase):
     id: int
     role: UserRole

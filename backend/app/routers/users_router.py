@@ -3,11 +3,29 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User, UserRole
-from app.schemas import UserResponse, UserCreate
+from app.schemas import UserResponse, UserCreate, UserProfileUpdate
 from app.auth import get_password_hash
 from app.dependencies import get_current_user, require_roles
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
+
+@router.put("/me", response_model=UserResponse)
+def update_profile(
+    profile_in: UserProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Updates the logged-in customer's profile (Full Name, Phone, Address)."""
+    if profile_in.full_name is not None:
+        current_user.full_name = profile_in.full_name
+    if profile_in.phone is not None:
+        current_user.phone = profile_in.phone
+    if profile_in.address is not None:
+        current_user.address = profile_in.address
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 @router.get("", response_model=List[UserResponse])
 def get_users(

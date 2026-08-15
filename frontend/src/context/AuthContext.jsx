@@ -33,16 +33,16 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const res = await api.get('/auth/me');
-          // If previous session was non-Customer (e.g. Officer/Admin), force customer login for Customer testing
-          if (res.data.role !== 'CUSTOMER') {
-            await login('customer@insure.com', 'password123');
+          // Ensure session defaults to Insurance Agent (Priya Nair)
+          if (res.data.role !== 'AGENT') {
+            await login('agent@insure.com', 'password123');
           } else {
             setUser(res.data);
             localStorage.setItem('user', JSON.stringify(res.data));
           }
         } catch (err) {
           try {
-            await login('customer@insure.com', 'password123');
+            await login('agent@insure.com', 'password123');
           } catch (e) {
             logout();
           }
@@ -50,9 +50,9 @@ export const AuthProvider = ({ children }) => {
           setLoading(false);
         }
       } else {
-        // Auto log in as Customer if no token exists
+        // Auto log in as Insurance Agent if no token exists
         try {
-          await login('customer@insure.com', 'password123');
+          await login('agent@insure.com', 'password123');
         } catch (err) {
           console.error(err);
         } finally {

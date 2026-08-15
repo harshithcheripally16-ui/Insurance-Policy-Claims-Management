@@ -5,7 +5,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions, Stepper, Step, StepLabel,
   InputAdornment, CircularProgress
 } from '@mui/material';
-import ShieldIcon from '@mui/icons-material/Shield';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockResetIcon from '@mui/icons-material/LockReset';
 import SendIcon from '@mui/icons-material/Send';
@@ -16,7 +16,7 @@ import { useAuth } from '../context/AuthContext';
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('customer@insure.com');
+  const [email, setEmail] = useState('agent@insure.com');
   const [password, setPassword] = useState('password123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -101,14 +101,14 @@ export default function Login() {
     <Container maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
         <Box sx={{ display: 'inline-flex', p: 1.5, bgcolor: 'action.hover', borderRadius: '50%', mb: 1 }}>
-          <ShieldIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <SupportAgentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
         </Box>
 
         <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
-          Customer Portal Sign In
+          Insurance Agent Portal Sign In
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Insurance Policy & Claims Management System
+          Insurance Agent Policy & Claims Management System
         </Typography>
 
         {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -116,7 +116,7 @@ export default function Login() {
         <Box component="form" onSubmit={handleSubmit} sx={{ textAlign: 'left' }}>
           <TextField
             fullWidth
-            label="Email Address"
+            label="Agent Email Address"
             variant="outlined"
             margin="normal"
             value={email}
@@ -154,13 +154,13 @@ export default function Login() {
             startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <LockOpenIcon />}
             sx={{ mt: 1, mb: 2, py: 1.2, fontWeight: 700 }}
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? 'Authenticating...' : 'Sign In as Agent'}
           </Button>
         </Box>
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Don't have a Customer account?{' '}
+            Need an Agent account?{' '}
             <Link to="/register" style={{ color: '#1e3a8a', fontWeight: 600, textDecoration: 'none' }}>
               Register Here
             </Link>
@@ -188,11 +188,11 @@ export default function Login() {
           {forgotStep === 0 && (
             <Box component="form" onSubmit={handleRequestForgotOTP}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Enter your registered email address below. We will send a 6-digit verification code via SMTP.
+                Enter your registered Agent email address below. We will send a 6-digit verification code via SMTP.
               </Typography>
               <TextField
                 fullWidth
-                label="Registered Email Address"
+                label="Registered Agent Email"
                 type="email"
                 value={forgotForm.email}
                 onChange={(e) => setForgotForm({ ...forgotForm, email: e.target.value })}

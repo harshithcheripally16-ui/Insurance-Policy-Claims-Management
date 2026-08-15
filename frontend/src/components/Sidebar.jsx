@@ -8,8 +8,9 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PolicyIcon from '@mui/icons-material/Policy';
 import CategoryIcon from '@mui/icons-material/Category';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
+import PeopleIcon from '@mui/icons-material/People';
 import DownloadIcon from '@mui/icons-material/Download';
-import PersonIcon from '@mui/icons-material/Person';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import api from '../services/api';
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
@@ -22,7 +23,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'insurance_claims_report.csv');
+      link.setAttribute('download', 'insurance_agent_sales_report.csv');
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -31,11 +32,13 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     }
   };
 
+  // Insurance Agent Dedicated Menu
   const navItems = [
-    { label: 'Customer Overview', path: '/dashboard', icon: <DashboardIcon /> },
+    { label: 'Agent Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
     { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
-    { label: 'My Policies', path: '/policies', icon: <PolicyIcon /> },
-    { label: 'Submit & Track Claims', path: '/claims', icon: <AssignmentLateIcon /> },
+    { label: 'Customer Policies', path: '/policies', icon: <PolicyIcon /> },
+    { label: 'Customer Claims', path: '/claims', icon: <AssignmentLateIcon /> },
+    { label: 'Customer Directory', path: '/users', icon: <PeopleIcon /> },
   ];
 
   const sidebarContent = (
@@ -44,16 +47,16 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         {/* Role Badge Indicator */}
         <Box sx={{ px: 1, mb: 2 }}>
           <Chip
-            icon={<PersonIcon fontSize="small" />}
-            label="Customer Portal"
-            color="success"
+            icon={<SupportAgentIcon fontSize="small" />}
+            label="Insurance Agent Portal"
+            color="info"
             size="small"
             sx={{ fontWeight: 700, width: '100%', justifyContent: 'flex-start', px: 1 }}
           />
         </Box>
 
         <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
-          Customer Menu
+          Agent Menu
         </Typography>
 
         <List sx={{ mt: 1 }}>
@@ -110,7 +113,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <DownloadIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Export CSV Report"
+            primary="Export Sales Report"
             primaryTypographyProps={{ fontWeight: 600, fontSize: '0.85rem' }}
           />
         </ListItemButton>

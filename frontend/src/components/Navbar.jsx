@@ -95,7 +95,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                 <ShieldIcon sx={{ color: '#ffffff', fontSize: 22 }} />
               </Box>
               <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
-                InsurCare <Typography component="span" variant="caption" sx={{ bgcolor: 'primary.light', color: '#ffffff', px: 1, py: 0.3, borderRadius: 1, fontWeight: 700, ml: 0.5 }}>PRO</Typography>
+                InsurCare <Typography component="span" variant="caption" sx={{ bgcolor: 'primary.light', color: '#ffffff', px: 1, py: 0.3, borderRadius: 1, fontWeight: 700, ml: 0.5 }}>AGENT PRO</Typography>
               </Typography>
             </Box>
           </Box>
@@ -178,15 +178,15 @@ export default function Navbar({ onMobileMenuToggle }) {
                     '&:hover': { bgcolor: 'action.hover' }
                   }}
                 >
-                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '0.85rem', fontWeight: 700 }}>
-                    {user.full_name?.charAt(0).toUpperCase() || 'U'}
+                  <Avatar sx={{ width: 32, height: 32, bgcolor: 'info.main', fontSize: '0.85rem', fontWeight: 700 }}>
+                    {user.full_name?.charAt(0).toUpperCase() || 'A'}
                   </Avatar>
                   <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                     <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.2 }}>
                       {user.full_name?.replace(/\s*\([^)]*\)/, '')}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700, fontSize: '0.7rem' }}>
-                      Customer Account
+                    <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 700, fontSize: '0.7rem' }}>
+                      Insurance Agent Account
                     </Typography>
                   </Box>
                 </Box>
@@ -249,7 +249,7 @@ export default function Navbar({ onMobileMenuToggle }) {
         </Toolbar>
       </AppBar>
 
-      {/* CUSTOMER PROFILE VIEW & EDIT MODAL */}
+      {/* AGENT PROFILE VIEW & EDIT MODAL */}
       <ProfileDialog
         open={openProfileModal}
         onClose={() => setOpenProfileModal(false)}

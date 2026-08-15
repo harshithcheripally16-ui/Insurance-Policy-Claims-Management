@@ -59,7 +59,7 @@ export default function Navbar({ onMobileMenuToggle }) {
         position="sticky"
         elevation={0}
         sx={{
-          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(8, 18, 38, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+          bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(8, 18, 38, 0.94)' : 'rgba(255, 255, 255, 0.94)',
           backdropFilter: 'blur(16px)',
           borderBottom: '1px solid',
           borderColor: 'divider',
@@ -69,18 +69,37 @@ export default function Navbar({ onMobileMenuToggle }) {
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 4 }, height: 68 }}>
-          {/* Policybazaar Style Brand Logo & Mobile Toggle */}
+          {/* Hamburger Menu Toggle Button (Left of Brand Logo) */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <IconButton
-              color="inherit"
-              edge="start"
-              onClick={onMobileMenuToggle}
-              sx={{ display: { md: 'none' }, color: 'text.secondary' }}
-            >
-              <MenuIcon />
-            </IconButton>
+            <Tooltip title="Toggle Navigation Menu">
+              <IconButton
+                color="inherit"
+                edge="start"
+                onClick={onMobileMenuToggle}
+                sx={{
+                  color: (theme) => theme.palette.mode === 'dark' ? '#ffffff' : '#002970',
+                  p: 1,
+                  borderRadius: 2.5,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    borderColor: '#ff5a00',
+                    bgcolor: 'action.hover',
+                    color: '#ff5a00',
+                    transform: 'scale(1.05)',
+                  }
+                }}
+              >
+                <MenuIcon sx={{ fontSize: 26 }} />
+              </IconButton>
+            </Tooltip>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2, cursor: 'pointer' }}>
+            {/* Policybazaar Style Brand Logo */}
+            <Box
+              onClick={() => window.location.href = '/dashboard'}
+              sx={{ display: 'flex', alignItems: 'center', gap: 1.2, cursor: 'pointer' }}
+            >
               <Box
                 sx={{
                   width: 38,
@@ -101,7 +120,7 @@ export default function Navbar({ onMobileMenuToggle }) {
             </Box>
           </Box>
 
-          {/* Right Section: Notifications & Policybazaar Styled Profile Header */}
+          {/* Right Section: Notifications & User Profile Header */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {/* Notifications Dropdown */}
             <Tooltip title="Notifications">

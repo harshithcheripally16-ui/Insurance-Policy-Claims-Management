@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Typography, Divider, Paper, Drawer, Chip
+  Typography, Divider, Drawer, Chip, IconButton
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PolicyIcon from '@mui/icons-material/Policy';
@@ -10,6 +10,8 @@ import CategoryIcon from '@mui/icons-material/Category';
 import PeopleIcon from '@mui/icons-material/People';
 import DownloadIcon from '@mui/icons-material/Download';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import CloseIcon from '@mui/icons-material/Close';
+import ShieldIcon from '@mui/icons-material/Shield';
 import api from '../services/api';
 
 export default function Sidebar({ mobileOpen, onMobileClose }) {
@@ -38,11 +40,38 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     { label: 'Customer Directory', path: '/users', icon: <PeopleIcon /> },
   ];
 
+  const drawerHeader = (
+    <Box sx={{ p: 2.5, pb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid', borderColor: 'divider' }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+        <Box
+          sx={{
+            width: 34,
+            height: 34,
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #002970 0%, #001e54 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ShieldIcon sx={{ color: '#ff5a00', fontSize: 20 }} />
+        </Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, color: 'secondary.main', fontSize: '1.05rem', letterSpacing: '-0.02em' }}>
+          InsurCare <Typography component="span" variant="caption" sx={{ bgcolor: '#ff5a00', color: '#ffffff', px: 0.8, py: 0.2, borderRadius: 1, fontWeight: 800, ml: 0.3 }}>PRO</Typography>
+        </Typography>
+      </Box>
+
+      <IconButton onClick={onMobileClose} size="small" sx={{ color: 'text.secondary', '&:hover': { color: '#ff5a00' } }}>
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </Box>
+  );
+
   const sidebarContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
       <Box>
         {/* Role Badge Indicator */}
-        <Box sx={{ px: 1, mb: 2.5 }}>
+        <Box sx={{ px: 0.5, mb: 2.5, mt: 1 }}>
           <Chip
             icon={<SupportAgentIcon fontSize="small" sx={{ color: '#ffffff !important' }} />}
             label="Insurance Agent Portal"
@@ -50,8 +79,8 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           />
         </Box>
 
-        <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 800, letterSpacing: '0.08em', fontSize: '0.7rem' }}>
-          Agent Workspace
+        <Typography variant="overline" sx={{ px: 1.5, color: 'text.secondary', fontWeight: 800, letterSpacing: '0.08em', fontSize: '0.7rem' }}>
+          Navigation Menu
         </Typography>
 
         <List sx={{ mt: 1 }}>
@@ -72,7 +101,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     '&:hover': {
                       bgcolor: 'action.hover',
                     },
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                   }}
                 >
                   <ListItemIcon sx={{ color: isActive ? '#ff5a00' : 'text.secondary', minWidth: 40 }}>
@@ -82,7 +111,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                     primary={item.label}
                     primaryTypographyProps={{
                       fontWeight: isActive ? 800 : 600,
-                      fontSize: '0.88rem',
+                      fontSize: '0.9rem',
                     }}
                   />
                 </ListItemButton>
@@ -93,7 +122,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       </Box>
 
       {/* Export Report Action */}
-      <Box sx={{ p: 1 }}>
+      <Box sx={{ p: 0.5 }}>
         <Divider sx={{ mb: 2 }} />
         <ListItemButton
           onClick={handleExportCSV}
@@ -119,38 +148,24 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
   );
 
   return (
-    <>
-      {/* MOBILE TEMPORARY DRAWER */}
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={onMobileClose}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'background.paper' },
-        }}
-      >
-        {sidebarContent}
-      </Drawer>
-
-      {/* DESKTOP PERSISTENT SIDEBAR */}
-      <Paper
-        elevation={0}
-        sx={{
-          width: 240,
-          minHeight: 'calc(100vh - 110px)',
-          borderRadius: 0,
+    <Drawer
+      anchor="left"
+      open={mobileOpen}
+      onClose={onMobileClose}
+      ModalProps={{ keepMounted: true }}
+      PaperProps={{
+        sx: {
+          width: 270,
+          bgcolor: 'background.paper',
+          boxShadow: '0 25px 50px -12px rgba(0, 41, 112, 0.35)',
           borderRight: '1px solid',
           borderColor: 'divider',
-          bgcolor: 'background.paper',
-          display: { xs: 'none', md: 'block' },
-          flexShrink: 0,
-          transition: 'background-color 0.3s ease, border-color 0.3s ease'
-        }}
-      >
-        {sidebarContent}
-      </Paper>
-    </>
+          transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        }
+      }}
+    >
+      {drawerHeader}
+      {sidebarContent}
+    </Drawer>
   );
 }

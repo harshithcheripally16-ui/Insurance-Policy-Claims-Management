@@ -20,7 +20,8 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       const res = await api.get('/users');
-      setUsersList(res.data);
+      const sortedUsers = [...res.data].sort((a, b) => a.id - b.id);
+      setUsersList(sortedUsers);
     } catch (err) {
       console.error(err);
     }

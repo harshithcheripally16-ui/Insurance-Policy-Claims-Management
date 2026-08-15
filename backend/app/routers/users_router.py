@@ -36,7 +36,7 @@ def get_users(
     query = db.query(User)
     if role:
         query = query.filter(User.role == role)
-    return query.order_by(User.id.desc()).all()
+    return query.order_by(User.id.asc()).all()
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(

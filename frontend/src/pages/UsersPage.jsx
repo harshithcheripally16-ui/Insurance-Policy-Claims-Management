@@ -87,7 +87,7 @@ export default function UsersPage() {
           <TableBody>
             {usersList.map((u) => (
               <TableRow key={u.id}>
-                <TableCell sx={{ fontWeight: 700 }}>#{u.id}</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>{u.id}</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>{u.full_name}</TableCell>
                 <TableCell>{u.email}</TableCell>
                 <TableCell>

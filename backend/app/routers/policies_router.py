@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models import User, UserRole, PolicyCatalog, Policy, PolicyStatus
 from app.schemas import (
     PolicyCatalogCreate, PolicyCatalogResponse,
-    PolicyPurchaseRequest, PolicyResponse
+    PolicyPurchaseRequest, PolicyUpdateRequest, PolicyResponse
 )
 from app.dependencies import get_current_user, require_roles
 from app.services.notification import create_notification
@@ -35,7 +35,7 @@ def create_policy_catalog(
     db.refresh(catalog)
     return catalog
 
-# --- PURCHASED POLICIES ENDPOINTS ---
+# --- PURCHASED / MANAGED POLICIES ENDPOINTS ---
 @router.get("/policies", response_model=List[PolicyResponse])
 def get_policies(
     customer_id: Optional[int] = None,
@@ -47,7 +47,6 @@ def get_policies(
     if current_user.role == UserRole.CUSTOMER:
         query = query.filter(Policy.customer_id == current_user.id)
     elif current_user.role == UserRole.AGENT:
-        # Agent sees policies assigned to them or customer policies
         if customer_id:
             query = query.filter(Policy.customer_id == customer_id)
     elif customer_id:
@@ -63,7 +62,7 @@ def purchase_policy(
 ):
     catalog = db.query(PolicyCatalog).filter(PolicyCatalog.id == req.catalog_id).first()
     if not catalog:
-        raise HTTPException(status_code=44, detail="Policy catalog template not found")
+        raise HTTPException(status_code=404, detail="Policy catalog template not found")
 
     target_customer_id = current_user.id
     agent_id = None
@@ -78,11 +77,9 @@ def purchase_policy(
     if not customer:
         raise HTTPException(status_code=404, detail="Customer user not found")
 
-    # Generate unique policy number e.g. POL-2026-88192
     policy_num = f"POL-{datetime.now().year}-{random.randint(10000, 99999)}"
     start_dt = datetime.now()
     end_dt = start_dt + timedelta(days=catalog.term_months * 30)
-
 
     policy = Policy(
         policy_number=policy_num,
@@ -126,3 +123,57 @@ def get_policy(
         raise HTTPException(status_code=403, detail="Access denied to this policy")
 
     return policy
+
+@router.put("/policies/{id}", response_model=PolicyResponse)
+def update_policy(
+    id: int,
+    req: PolicyUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.AGENT, UserRole.ADMIN]))
+):
+    policy = db.query(Policy).filter(Policy.id == id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    update_data = req.model_dump(exclude_unset=True)
+    for field, val in update_data.items():
+        setattr(policy, field, val)
+
+    db.commit()
+    db.refresh(policy)
+
+    create_notification(
+        db=db,
+        user_id=policy.customer_id,
+        title="Policy Updated",
+        message=f"Your policy {policy.policy_number} parameters have been updated by your Insurance Agent.",
+        notification_type="POLICY"
+    )
+
+    return policy
+
+@router.delete("/policies/{id}", status_code=status.HTTP_200_OK)
+def delete_policy(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.AGENT, UserRole.ADMIN]))
+):
+    policy = db.query(Policy).filter(Policy.id == id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    policy_num = policy.policy_number
+    cust_id = policy.customer_id
+
+    db.delete(policy)
+    db.commit()
+
+    create_notification(
+        db=db,
+        user_id=cust_id,
+        title="Policy Cancelled",
+        message=f"Your policy {policy_num} has been terminated/deleted.",
+        notification_type="POLICY"
+    )
+
+    return {"message": f"Policy {policy_num} deleted successfully"}

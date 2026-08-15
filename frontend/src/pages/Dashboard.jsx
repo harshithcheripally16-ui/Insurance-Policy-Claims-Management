@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box, Grid, Paper, Typography, Button, Table, TableBody, TableCell,
-  TableHead, TableRow, TableContainer, Chip, Card, CardContent, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, MenuItem, Alert
+  TableHead, TableRow, TableContainer, Chip, Card, CardContent
 } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import PeopleIcon from '@mui/icons-material/People';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import { useNavigate } from 'react-router-dom';
 import StatCard from '../components/StatCard';
-import DocumentViewerDialog from '../components/DocumentViewerDialog';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
@@ -24,22 +20,19 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [policies, setPolicies] = useState([]);
-  const [claims, setClaims] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Document viewer state
-  const [selectedDocClaim, setSelectedDocClaim] = useState(null);
 
   const loadData = async () => {
     try {
-      const [resStats, resPolicies, resClaims] = await Promise.all([
+      const [resStats, resPolicies, resCustomers] = await Promise.all([
         api.get('/analytics/dashboard'),
         api.get('/policies'),
-        api.get('/claims')
+        api.get('/users?role=CUSTOMER')
       ]);
       setStats(resStats.data);
       setPolicies(resPolicies.data);
-      setClaims(resClaims.data);
+      setCustomers(resCustomers.data);
     } catch (err) {
       console.error('Error fetching dashboard data', err);
     } finally {
@@ -52,28 +45,8 @@ export default function Dashboard() {
   }, [user]);
 
   if (loading || !stats) {
-    return <Typography sx={{ p: 4 }}>Loading Agent dashboard statistics...</Typography>;
+    return <Typography sx={{ p: 4 }}>Loading Agent Policy Administration dashboard...</Typography>;
   }
-
-  const getStatusChip = (status) => {
-    const map = {
-      APPROVED: { label: 'Approved', bg: '#dcfce7', color: '#166534' },
-      UNDER_REVIEW: { label: 'Under Review', bg: '#fef3c7', color: '#92400e' },
-      SUBMITTED: { label: 'Submitted', bg: '#dbeafe', color: '#1e40af' },
-      REJECTED: { label: 'Rejected', bg: '#fee2e2', color: '#991b1b' },
-      DOCUMENTS_REQUIRED: { label: 'Docs Required', bg: '#f3e8ff', color: '#6b21a8' },
-    };
-    const s = map[status] || { label: status, bg: '#f1f5f9', color: '#475569' };
-    return (
-      <Chip
-        label={s.label}
-        size="small"
-        sx={{ bgcolor: s.bg, color: s.color, fontWeight: 700, borderRadius: 1.5, fontSize: '0.75rem' }}
-      />
-    );
-  };
-
-  const totalCommissions = (stats.total_premium_collected * 0.10).toLocaleString('en-IN');
 
   return (
     <Box sx={{ pb: 6 }}>
@@ -113,7 +86,7 @@ export default function Dashboard() {
                 Welcome, {user?.full_name?.replace(/\s*\([^)]*\)/, '')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#ccfbf1', mt: 0.5, fontWeight: 500 }}>
-                Insurance Agent Portfolio Dashboard | Manage client policies, sales, and customer claims.
+                Insurance Agent Administration Dashboard | Manage customer policy records and client accounts.
               </Typography>
             </Box>
           </Box>
@@ -134,12 +107,12 @@ export default function Dashboard() {
               '&:hover': { bgcolor: '#1e40af' }
             }}
           >
-            Sell Policy to Customer
+            Issue Policy to Customer
           </Button>
         </Box>
       </Paper>
 
-      {/* KPI Cards Grid */}
+      {/* Policy Administration KPI Cards Grid */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
@@ -147,42 +120,42 @@ export default function Dashboard() {
             value={stats.total_policies}
             icon={<ShieldIcon />}
             color="#3b82f6"
-            subtitle={`${stats.active_policies} Active Customer Coverages`}
+            subtitle="Customer Policy Registrations"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Customer Claims"
-            value={stats.total_claims}
-            icon={<AssignmentIcon />}
-            color="#f59e0b"
-            subtitle={`${stats.pending_claims} Under Review`}
+            title="Active Policies"
+            value={stats.active_policies}
+            icon={<VerifiedUserIcon />}
+            color="#10b981"
+            subtitle="Active Policy Coverages"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Total Premiums Sold"
+            title="Managed Premiums"
             value={`₹${stats.total_premium_collected.toLocaleString('en-IN')}`}
             icon={<AccountBalanceWalletIcon />}
-            color="#10b981"
-            subtitle="Annual Sales Volume"
+            color="#0d9488"
+            subtitle="Annual Policy Premium Revenue"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            title="Agent Commission (10%)"
-            value={`₹${totalCommissions}`}
-            icon={<MonetizationOnIcon />}
+            title="Client Accounts"
+            value={customers.length}
+            icon={<PeopleIcon />}
             color="#8b5cf6"
-            subtitle="Estimated Earnings"
+            subtitle="Assigned Customer Profiles"
           />
         </Grid>
       </Grid>
 
-      {/* AGENT PORTFOLIO PANELS */}
+      {/* AGENT POLICY & CUSTOMER PANELS */}
       <Grid container spacing={3}>
         {/* Client Policies Portfolio Panel */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={7}>
           <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', bgcolor: 'background.paper', borderColor: 'divider' }}>
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
@@ -190,13 +163,13 @@ export default function Dashboard() {
                   <ShieldIcon color="primary" /> Client Policies Portfolio ({policies.length})
                 </Typography>
                 <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/policies')}>
-                  Manage All
+                  Manage All (CRUD)
                 </Button>
               </Box>
 
               {policies.length === 0 ? (
                 <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 3 }}>
-                  <Typography variant="body2" color="text.secondary">No customer policies assigned yet.</Typography>
+                  <Typography variant="body2" color="text.secondary">No customer policies registered yet.</Typography>
                   <Button variant="outlined" sx={{ mt: 2 }} onClick={() => navigate('/policies/catalog')}>
                     Issue First Policy
                   </Button>
@@ -230,41 +203,33 @@ export default function Dashboard() {
           </Paper>
         </Grid>
 
-        {/* Customer Claims Overview Panel */}
-        <Grid item xs={12} md={6}>
+        {/* Customer Directory Quick Panel */}
+        <Grid item xs={12} md={5}>
           <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', bgcolor: 'background.paper', borderColor: 'divider' }}>
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.2 }}>
-                  <ReceiptLongIcon color="warning" /> Customer Claims Overview ({claims.length})
+                  <PeopleIcon color="info" /> Assigned Customers ({customers.length})
                 </Typography>
-                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/claims')}>
-                  Track Claims
+                <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/users')}>
+                  View Directory
                 </Button>
               </Box>
 
-              {claims.length === 0 ? (
+              {customers.length === 0 ? (
                 <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 3 }}>
-                  <Typography variant="body2" color="text.secondary">No customer claims reported.</Typography>
+                  <Typography variant="body2" color="text.secondary">No assigned customer profiles.</Typography>
                 </Box>
               ) : (
-                claims.slice(0, 4).map((c) => (
+                customers.slice(0, 4).map((c) => (
                   <Card key={c.id} sx={{ mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
-                    <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-                          {c.claim_number} - {c.reason}
-                        </Typography>
-                        {getStatusChip(c.status)}
-                      </Box>
-                      <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 500 }}>
-                        Client: <strong>{c.customer?.full_name || 'Customer'}</strong> | Claim Amount: ₹{c.amount?.toLocaleString('en-IN')}
+                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+                        {c.full_name?.replace(/\s*\([^)]*\)/, '')}
                       </Typography>
-                      {c.reviews?.length > 0 && (
-                        <Alert severity="info" sx={{ mt: 1.5, py: 0.5, px: 1.5, borderRadius: 2, fontSize: '0.78rem' }}>
-                          <strong>Officer Remark:</strong> {c.reviews[c.reviews.length - 1].remarks}
-                        </Alert>
-                      )}
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {c.email} | {c.phone || 'No Phone'}
+                      </Typography>
                     </CardContent>
                   </Card>
                 ))
@@ -273,14 +238,6 @@ export default function Dashboard() {
           </Paper>
         </Grid>
       </Grid>
-
-      {/* DOCUMENT VIEWER DIALOG */}
-      <DocumentViewerDialog
-        open={Boolean(selectedDocClaim)}
-        onClose={() => setSelectedDocClaim(null)}
-        claim={selectedDocClaim}
-        onRefresh={loadData}
-      />
     </Box>
   );
 }

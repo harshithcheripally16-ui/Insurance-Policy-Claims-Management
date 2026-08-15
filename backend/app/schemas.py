@@ -82,6 +82,13 @@ class PolicyPurchaseRequest(BaseModel):
     catalog_id: int
     customer_id: Optional[int] = None # If Agent/Admin purchasing for a customer
 
+class PolicyUpdateRequest(BaseModel):
+    title: Optional[str] = None
+    coverage_amount: Optional[float] = None
+    premium: Optional[float] = None
+    status: Optional[PolicyStatus] = None
+    end_date: Optional[datetime] = None
+
 class PolicyResponse(BaseModel):
     id: int
     policy_number: str

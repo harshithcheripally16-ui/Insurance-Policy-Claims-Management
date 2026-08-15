@@ -7,7 +7,6 @@ import {
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PolicyIcon from '@mui/icons-material/Policy';
 import CategoryIcon from '@mui/icons-material/Category';
-import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import PeopleIcon from '@mui/icons-material/People';
 import DownloadIcon from '@mui/icons-material/Download';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
@@ -32,12 +31,11 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     }
   };
 
-  // Insurance Agent Dedicated Menu
+  // Insurance Agent Dedicated Menu (Customer & Policy CRUD Administration Only)
   const navItems = [
     { label: 'Agent Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
     { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
-    { label: 'Customer Policies', path: '/policies', icon: <PolicyIcon /> },
-    { label: 'Customer Claims', path: '/claims', icon: <AssignmentLateIcon /> },
+    { label: 'Customer Policies (CRUD)', path: '/policies', icon: <PolicyIcon /> },
     { label: 'Customer Directory', path: '/users', icon: <PeopleIcon /> },
   ];
 
@@ -48,7 +46,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         <Box sx={{ px: 1, mb: 2 }}>
           <Chip
             icon={<SupportAgentIcon fontSize="small" />}
-            label="Insurance Agent Portal"
+            label="Agent Policy Admin"
             color="info"
             size="small"
             sx={{ fontWeight: 700, width: '100%', justifyContent: 'flex-start', px: 1 }}
@@ -56,7 +54,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </Box>
 
         <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
-          Agent Menu
+          Agent Scope & Operations
         </Typography>
 
         <List sx={{ mt: 1 }}>
@@ -113,7 +111,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <DownloadIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Export Sales Report"
+            primary="Export Policy Report"
             primaryTypographyProps={{ fontWeight: 600, fontSize: '0.85rem' }}
           />
         </ListItemButton>

@@ -39,10 +39,10 @@ def get_users(
     return query.order_by(User.id.desc()).all()
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def create_user_by_admin(
+def create_user(
     user_in: UserCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_roles([UserRole.ADMIN]))
+    current_user: User = Depends(require_roles([UserRole.ADMIN, UserRole.AGENT]))
 ):
     existing = db.query(User).filter(User.email == user_in.email).first()
     if existing:

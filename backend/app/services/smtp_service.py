@@ -163,18 +163,18 @@ def send_smtp_email(to_email: str, subject: str, html_content: str, text_content
             msg.attach(MIMEText(text_content, "plain"))
         msg.attach(MIMEText(html_content, "html"))
 
+        clean_password = settings.SMTP_PASSWORD.replace(" ", "")
         with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
             if settings.SMTP_TLS:
                 server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.login(settings.SMTP_USER, clean_password)
             server.sendmail(settings.EMAILS_FROM, [to_email], msg.as_string())
         
         logger.info(f"[SMTP SERVICE] Email successfully delivered to {to_email} via SMTP.")
         return True
     except Exception as e:
         logger.error(f"[SMTP ERROR] Failed to send email to {to_email}: {e}")
-        # Return True for smooth developer experience even if external SMTP server is blocked
-        return True
+        return False
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str = "REGISTRATION") -> bool:
     """Sends a 6-digit OTP verification email."""

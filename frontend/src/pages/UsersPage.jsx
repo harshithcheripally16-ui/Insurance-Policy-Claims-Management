@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow,
   Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField,
-  MenuItem, Alert
+  MenuItem, Alert, TableContainer
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import PeopleIcon from '@mui/icons-material/People';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,11 +20,12 @@ export default function UsersPage() {
 
   const loadUsers = async () => {
     try {
-      const res = await api.get('/users');
+      // Query strictly records where role is CUSTOMER
+      const res = await api.get('/users?role=CUSTOMER');
       const sortedUsers = [...res.data].sort((a, b) => a.id - b.id);
       setUsersList(sortedUsers);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load customers', err);
     }
   };
 
@@ -40,78 +42,88 @@ export default function UsersPage() {
       setNewUser({ full_name: '', email: '', password: 'password123', role: 'CUSTOMER', phone: '', address: '' });
       loadUsers();
     } catch (err) {
-      setMsg(err.response?.data?.detail || 'Failed to create user');
+      setMsg(err.response?.data?.detail || 'Failed to create customer profile');
     }
   };
 
-  const roleColors = {
-    ADMIN: 'error',
-    CLAIMS_OFFICER: 'warning',
-    AGENT: 'info',
-    CUSTOMER: 'success'
-  };
-
   return (
-    <Box sx={{ pb: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+    <Box sx={{ pb: 6 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3.5, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
-            User Management Directory
+          <Typography variant="h4" sx={{ fontWeight: 900, color: 'secondary.main', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+            <PeopleIcon sx={{ color: '#ff5a00' }} /> Customer Directory ({usersList.length})
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Inspect platform users, roles, and create new customer or agent accounts.
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
+            Inspect registered customer profiles, contact numbers, and account details.
           </Typography>
         </Box>
+
         {user?.role === 'ADMIN' && (
           <Button
             variant="contained"
+            color="primary"
             startIcon={<PersonAddIcon />}
             onClick={() => setOpenModal(true)}
+            sx={{ py: 1.2, px: 3, fontWeight: 800, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}
           >
-            Create New User
+            Create Customer Profile
           </Button>
         )}
       </Box>
 
-      <Paper sx={{ p: 3, borderRadius: 3 }}>
+      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2, bgcolor: 'background.paper', borderColor: 'divider' }}>
         <Table>
-          <TableHead sx={{ bgcolor: '#f8fafc' }}>
+          <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Full Name</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Role</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Phone</TableCell>
-              <TableCell sx={{ fontWeight: 700 }}>Registered Date</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>ID</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Full Name</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Email Address</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Role</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Phone Number</TableCell>
+              <TableCell sx={{ fontWeight: 800 }}>Registered Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {usersList.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell sx={{ fontWeight: 700 }}>{u.id}</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>{u.full_name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>
-                  <Chip
-                    label={u.role.replace('_', ' ')}
-                    color={roleColors[u.role] || 'default'}
-                    size="small"
-                  />
+            {usersList.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">No customer records found.</Typography>
                 </TableCell>
-                <TableCell>{u.phone || 'N/A'}</TableCell>
-                <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
               </TableRow>
-            ))}
+            ) : (
+              usersList.map((u, index) => (
+                <TableRow key={u.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                  {/* Sequential Auto-Reindexed ID starting from 1 */}
+                  <TableCell sx={{ fontWeight: 800, color: 'secondary.main' }}>{index + 1}</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>
+                    {u.full_name?.replace(/\s*\([^)]*\)/, '')}
+                  </TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontWeight: 500 }}>{u.email}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label="CUSTOMER"
+                      color="success"
+                      size="small"
+                      sx={{ fontWeight: 800, borderRadius: 1.5 }}
+                    />
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{u.phone || 'N/A'}</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.84rem' }}>
+                    {new Date(u.created_at).toLocaleDateString('en-IN')}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
-      </Paper>
+      </TableContainer>
 
-      {/* CREATE USER DIALOG */}
+      {/* CREATE CUSTOMER DIALOG */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700 }}>Create New User Account</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 900, pt: 3, color: 'secondary.main' }}>Create Customer Account</DialogTitle>
         <Box component="form" onSubmit={handleCreateUser}>
           <DialogContent>
-            {msg && <Alert severity="error" sx={{ mb: 2 }}>{msg}</Alert>}
+            {msg && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{msg}</Alert>}
             <TextField
               fullWidth
               label="Full Name"
@@ -139,22 +151,18 @@ export default function UsersPage() {
               required
             />
             <TextField
-              select
               fullWidth
-              label="User Role"
-              value={newUser.role}
-              onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+              label="Phone Number"
+              value={newUser.phone}
+              onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
               margin="dense"
-            >
-              <MenuItem value="CUSTOMER">Customer</MenuItem>
-              <MenuItem value="AGENT">Insurance Agent</MenuItem>
-              <MenuItem value="CLAIMS_OFFICER">Claims Officer</MenuItem>
-              <MenuItem value="ADMIN">Admin</MenuItem>
-            </TextField>
+            />
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 3 }}>
             <Button onClick={() => setOpenModal(false)}>Cancel</Button>
-            <Button type="submit" variant="contained">Create User</Button>
+            <Button type="submit" variant="contained" color="primary" sx={{ px: 3, bgcolor: '#ff5a00', '&:hover': { bgcolor: '#e65100' } }}>
+              Create Customer
+            </Button>
           </DialogActions>
         </Box>
       </Dialog>

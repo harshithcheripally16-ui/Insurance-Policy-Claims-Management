@@ -22,20 +22,19 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'insurance_agent_sales_report.csv');
+      link.setAttribute('download', 'insurance_policy_summary.csv');
       document.body.appendChild(link);
       link.click();
       link.remove();
     } catch (err) {
-      console.error('Failed to export CSV', err);
+      console.error('Failed to export report', err);
     }
   };
 
-  // Insurance Agent Dedicated Menu (Customer & Policy CRUD Administration Only)
   const navItems = [
     { label: 'Agent Dashboard', path: '/dashboard', icon: <DashboardIcon /> },
-    { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
-    { label: 'Customer Policies (CRUD)', path: '/policies', icon: <PolicyIcon /> },
+    { label: 'Insurance Plans', path: '/policies/catalog', icon: <CategoryIcon /> },
+    { label: 'Customer Policies', path: '/policies', icon: <PolicyIcon /> },
     { label: 'Customer Directory', path: '/users', icon: <PeopleIcon /> },
   ];
 
@@ -46,7 +45,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         <Box sx={{ px: 1, mb: 2 }}>
           <Chip
             icon={<SupportAgentIcon fontSize="small" />}
-            label="Agent Policy Admin"
+            label="Insurance Agent Portal"
             color="info"
             size="small"
             sx={{ fontWeight: 700, width: '100%', justifyContent: 'flex-start', px: 1 }}
@@ -54,7 +53,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </Box>
 
         <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
-          Agent Scope & Operations
+          Agent Workspace
         </Typography>
 
         <List sx={{ mt: 1 }}>
@@ -111,7 +110,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
             <DownloadIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Export Policy Report"
+            primary="Download Summary"
             primaryTypographyProps={{ fontWeight: 600, fontSize: '0.85rem' }}
           />
         </ListItemButton>

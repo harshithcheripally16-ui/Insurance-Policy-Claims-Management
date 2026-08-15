@@ -62,7 +62,7 @@ export default function Login() {
         setDemoOTP(res.data.otp_code_demo);
       }
 
-      setForgotMsg({ type: 'success', text: `6-Digit Password Reset OTP sent to ${forgotForm.email} via SMTP!` });
+      setForgotMsg({ type: 'success', text: `6-Digit Password Reset OTP sent to ${forgotForm.email}!` });
       setForgotStep(1);
     } catch (err) {
       setForgotMsg({ type: 'error', text: err.response?.data?.detail || 'Account email not found.' });
@@ -188,7 +188,7 @@ export default function Login() {
           {forgotStep === 0 && (
             <Box component="form" onSubmit={handleRequestForgotOTP}>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Enter your registered Agent email address below. We will send a 6-digit verification code via SMTP.
+                Enter your registered Agent email address below. We will send a 6-digit verification code to your email.
               </Typography>
               <TextField
                 fullWidth

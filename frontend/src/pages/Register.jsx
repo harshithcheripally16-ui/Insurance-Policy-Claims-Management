@@ -55,7 +55,7 @@ export default function Register() {
         setDemoOTP(res.data.otp_code_demo);
       }
 
-      setMsg({ type: 'success', text: `6-Digit Verification Code sent to ${formData.email} via SMTP!` });
+      setMsg({ type: 'success', text: `6-Digit Verification Code sent to ${formData.email}!` });
       setActiveStep(1);
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to send OTP verification email.' });
@@ -90,11 +90,11 @@ export default function Register() {
   return (
     <Container maxWidth="xs" sx={{ mt: 5, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main', mb: 0.5, textAlign: 'center' }}>
-          Customer Registration
+        <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+          Agent Account Registration
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-          Sign up with SMTP Email Verification
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Sign up with Email Verification
         </Typography>
 
         <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>

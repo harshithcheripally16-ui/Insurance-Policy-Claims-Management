@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function PoliciesPage() {
   const { user } = useAuth();
-  const [tab, setTab] = useState(1); // Default to My Customer Policies (CRUD)
+  const [tab, setTab] = useState(1); // Default to Customer Policies
   const [catalog, setCatalog] = useState([]);
   const [policies, setPolicies] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -62,7 +62,7 @@ export default function PoliciesPage() {
     loadData();
   }, [user]);
 
-  // CREATE [C]: Purchase/Issue Policy for Customer
+  // Issue Policy for Customer
   const handlePurchase = async () => {
     if (!selectedCatalog || !targetCustomerId) return;
     setMsg({ type: '', text: '' });
@@ -74,14 +74,14 @@ export default function PoliciesPage() {
       setOpenPurchaseModal(false);
       setSelectedCatalog(null);
       setTab(1); // Switch to Customer Policies tab
-      setMsg({ type: 'success', text: 'Policy successfully created and assigned to customer!' });
+      setMsg({ type: 'success', text: 'Policy successfully issued and assigned to customer!' });
       loadData();
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to issue policy' });
     }
   };
 
-  // UPDATE [U]: Edit Policy Details
+  // Edit Policy Details
   const handleOpenEdit = (policy) => {
     setEditingPolicy(policy);
     setEditForm({
@@ -107,25 +107,25 @@ export default function PoliciesPage() {
       });
       setOpenEditModal(false);
       setEditingPolicy(null);
-      setMsg({ type: 'success', text: `Policy ${editingPolicy.policy_number} parameters updated successfully!` });
+      setMsg({ type: 'success', text: `Policy ${editingPolicy.policy_number} details updated successfully!` });
       loadData();
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to update policy' });
     }
   };
 
-  // DELETE [D]: Terminate/Delete Policy
+  // Delete Policy
   const handleDeletePolicy = async () => {
     if (!deletingPolicy) return;
     setMsg({ type: '', text: '' });
     try {
       await api.delete(`/policies/${deletingPolicy.id}`);
       setOpenDeleteModal(false);
-      setMsg({ type: 'success', text: `Policy ${deletingPolicy.policy_number} deleted successfully!` });
+      setMsg({ type: 'success', text: `Policy ${deletingPolicy.policy_number} cancelled successfully!` });
       setDeletingPolicy(null);
       loadData();
     } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to delete policy' });
+      setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to cancel policy' });
     }
   };
 
@@ -146,22 +146,15 @@ export default function PoliciesPage() {
     return <Chip label={s.label} color={s.color} size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />;
   };
 
-  const featureList = [
-    'Cashless Claim Settlement Network',
-    '24x7 Emergency Customer Support',
-    'Instant Digital Policy Issuance',
-    'Tax Savings Benefits under Section 80D/80C'
-  ];
-
   return (
     <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
-            Customer Policy Administration (CRUD)
+            Customer Policy Management
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Create, Read, Update, and Terminate customer insurance policy records.
+            View, issue, update, and manage policy coverages for your customers.
           </Typography>
         </Box>
 
@@ -192,18 +185,18 @@ export default function PoliciesPage() {
             '& .MuiTab-root': { py: 1.5, fontWeight: 700, borderRadius: 2, textTransform: 'none' }
           }}
         >
-          <Tab label={`Customer Policy Records (${policies.length})`} value={1} />
-          <Tab label="Policy Catalog Templates" value={0} />
+          <Tab label={`Active Customer Policies (${policies.length})`} value={1} />
+          <Tab label="Available Insurance Plans" value={0} />
         </Tabs>
       </Paper>
 
-      {/* TAB 1: CUSTOMER POLICIES TABLE (READ, UPDATE, DELETE) */}
+      {/* TAB 1: CUSTOMER POLICIES TABLE */}
       {tab === 1 && (
         <Box>
           <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
             <TextField
               size="small"
-              placeholder="Search by Policy #, Title, or Customer..."
+              placeholder="Search by Policy Number, Title, or Customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               sx={{ width: 320 }}
@@ -222,13 +215,13 @@ export default function PoliciesPage() {
               <TableHead>
                 <TableRow>
                   <TableCell>Policy Number</TableCell>
-                  <TableCell>Title & Type</TableCell>
+                  <TableCell>Plan Title & Type</TableCell>
                   <TableCell>Assigned Customer</TableCell>
-                  <TableCell>Coverage (₹)</TableCell>
-                  <TableCell>Premium (₹)</TableCell>
+                  <TableCell>Coverage Amount (₹)</TableCell>
+                  <TableCell>Annual Premium (₹)</TableCell>
                   <TableCell>Validity Term</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell align="right">Actions (CRUD)</TableCell>
+                  <TableCell align="right">Manage</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -261,13 +254,13 @@ export default function PoliciesPage() {
                       </TableCell>
                       <TableCell align="right">
                         <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                          <Tooltip title="Edit Policy Parameters">
+                          <Tooltip title="Edit Policy Details">
                             <IconButton size="small" color="primary" onClick={() => handleOpenEdit(p)}>
                               <EditIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
 
-                          <Tooltip title="Delete / Terminate Policy">
+                          <Tooltip title="Cancel Policy Coverage">
                             <IconButton size="small" color="error" onClick={() => { setDeletingPolicy(p); setOpenDeleteModal(true); }}>
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -283,7 +276,7 @@ export default function PoliciesPage() {
         </Box>
       )}
 
-      {/* TAB 0: POLICY CATALOG TEMPLATES (CREATE NEW POLICY) */}
+      {/* TAB 0: AVAILABLE INSURANCE PLANS */}
       {tab === 0 && (
         <Grid container spacing={3}>
           {catalog.map((item, index) => {
@@ -373,7 +366,7 @@ export default function PoliciesPage() {
         </Grid>
       )}
 
-      {/* ISSUE NEW POLICY MODAL (CREATE) */}
+      {/* ISSUE NEW POLICY MODAL */}
       <Dialog open={openPurchaseModal} onClose={() => setOpenPurchaseModal(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Issue Policy for Customer</DialogTitle>
         <DialogContent>
@@ -400,7 +393,7 @@ export default function PoliciesPage() {
           <TextField
             select
             fullWidth
-            label="Select Assigned Customer"
+            label="Select Customer"
             value={targetCustomerId}
             onChange={(e) => setTargetCustomerId(e.target.value)}
             margin="normal"
@@ -421,14 +414,14 @@ export default function PoliciesPage() {
         </DialogActions>
       </Dialog>
 
-      {/* EDIT POLICY MODAL (UPDATE) */}
+      {/* EDIT POLICY MODAL */}
       <Dialog open={openEditModal} onClose={() => setOpenEditModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Edit Policy Parameters</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, pt: 3 }}>Edit Policy Details</DialogTitle>
         <Box component="form" onSubmit={handleUpdatePolicy}>
           <DialogContent>
             {editingPolicy && (
               <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
-                Policy #: <strong>{editingPolicy.policy_number}</strong> | Customer: <strong>{editingPolicy.customer?.full_name}</strong>
+                Policy Number: <strong>{editingPolicy.policy_number}</strong> | Customer: <strong>{editingPolicy.customer?.full_name}</strong>
               </Typography>
             )}
 
@@ -496,21 +489,21 @@ export default function PoliciesPage() {
         </Box>
       </Dialog>
 
-      {/* DELETE / TERMINATE POLICY MODAL (DELETE) */}
+      {/* CANCEL POLICY MODAL */}
       <Dialog open={openDeleteModal} onClose={() => setOpenDeleteModal(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, pt: 3, color: 'error.main' }}>Terminate / Delete Policy</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, pt: 3, color: 'error.main' }}>Cancel Policy Coverage</DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Are you sure you want to delete policy <strong>{deletingPolicy?.policy_number}</strong> ({deletingPolicy?.title})?
+            Are you sure you want to cancel policy <strong>{deletingPolicy?.policy_number}</strong> ({deletingPolicy?.title})?
           </Typography>
           <Alert severity="warning" sx={{ borderRadius: 2 }}>
-            This action will remove the customer policy record permanently.
+            This action will remove the customer policy coverage.
           </Alert>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpenDeleteModal(false)}>Cancel</Button>
           <Button onClick={handleDeletePolicy} variant="contained" color="error" sx={{ px: 3 }}>
-            Confirm Delete
+            Confirm Cancellation
           </Button>
         </DialogActions>
       </Dialog>

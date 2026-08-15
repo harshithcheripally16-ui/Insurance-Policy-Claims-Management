@@ -8,7 +8,6 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PersonIcon from '@mui/icons-material/Person';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import EditIcon from '@mui/icons-material/Edit';
@@ -61,9 +60,11 @@ export default function Navbar({ onMobileMenuToggle }) {
         sx={{
           bgcolor: (theme) => theme.palette.mode === 'dark' ? 'rgba(17, 24, 39, 0.85)' : 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(12px)',
-          borderBottom: (theme) => `1px solid ${theme.palette.mode === 'dark' ? '#1f2937' : '#e2e8f0'}`,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
           color: 'text.primary',
           zIndex: (theme) => theme.zIndex.drawer + 1,
+          transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, sm: 3 } }}>
@@ -106,8 +107,8 @@ export default function Navbar({ onMobileMenuToggle }) {
               <IconButton
                 onClick={(e) => setAnchorElNotif(e.currentTarget)}
                 sx={{
-                  bgcolor: (theme) => theme.palette.mode === 'dark' ? '#1f2937' : '#f1f5f9',
-                  '&:hover': { bgcolor: (theme) => theme.palette.mode === 'dark' ? '#374151' : '#e2e8f0' },
+                  bgcolor: 'action.hover',
+                  '&:hover': { bgcolor: 'action.selected' },
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -216,7 +217,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                   </MenuItem>
 
                   {/* Dark/Light Mode Switch Toggle */}
-                  <MenuItem onClick={toggleColorMode} sx={{ py: 1, display: 'flex', justifyContent: 'space-between' }}>
+                  <MenuItem onClick={toggleColorMode} sx={{ py: 1, display: 'flex', justifyContent: 'space-between', cursor: 'pointer' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <ListItemIcon sx={{ minWidth: 32, color: mode === 'dark' ? '#f59e0b' : '#64748b' }}>
                         {mode === 'dark' ? <Brightness7Icon fontSize="small" /> : <Brightness4Icon fontSize="small" />}
@@ -225,7 +226,11 @@ export default function Navbar({ onMobileMenuToggle }) {
                         {mode === 'dark' ? 'Dark Mode' : 'Light Mode'}
                       </Typography>
                     </Box>
-                    <Switch size="small" checked={mode === 'dark'} onChange={toggleColorMode} />
+                    <Switch
+                      size="small"
+                      checked={mode === 'dark'}
+                      onChange={(e) => { e.stopPropagation(); toggleColorMode(); }}
+                    />
                   </MenuItem>
 
                   <Divider sx={{ my: 0.5 }} />
@@ -250,7 +255,7 @@ export default function Navbar({ onMobileMenuToggle }) {
         onClose={() => setOpenProfileModal(false)}
         user={user}
         onProfileUpdated={(updatedUser) => {
-          login(user.email, 'password123'); // Refresh local user state
+          login(user.email, 'password123');
         }}
       />
     </>

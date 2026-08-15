@@ -63,7 +63,7 @@ export default function PoliciesPage() {
   return (
     <Box sx={{ pb: 6 }}>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
           Insurance Policy Center
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -71,7 +71,7 @@ export default function PoliciesPage() {
         </Typography>
       </Box>
 
-      <Paper elevation={0} sx={{ mb: 4, borderRadius: 3, p: 0.5, bgcolor: '#ffffff' }}>
+      <Paper elevation={0} sx={{ mb: 4, borderRadius: 3, p: 0.5, bgcolor: 'background.paper', borderColor: 'divider' }}>
         <Tabs
           value={tab}
           onChange={(e, val) => setTab(val)}
@@ -100,8 +100,10 @@ export default function PoliciesPage() {
                     flexDirection: 'column',
                     justify: 'space-between',
                     position: 'relative',
-                    border: isPopular ? '2px solid #2563eb' : '1px solid #e2e8f0',
-                    boxShadow: isPopular ? '0 12px 30px -8px rgba(37, 99, 235, 0.2)' : undefined
+                    bgcolor: 'background.paper',
+                    border: isPopular ? '2px solid' : '1px solid',
+                    borderColor: isPopular ? 'primary.main' : 'divider',
+                    boxShadow: isPopular ? '0 12px 30px -8px rgba(37, 99, 235, 0.25)' : undefined
                   }}
                 >
                   {isPopular && (
@@ -126,14 +128,14 @@ export default function PoliciesPage() {
                       <Chip
                         label={item.type}
                         size="small"
-                        sx={{ bgcolor: '#eff6ff', color: '#1e3a8a', fontWeight: 700, borderRadius: 1.5 }}
+                        sx={{ bgcolor: 'action.selected', color: 'primary.main', fontWeight: 700, borderRadius: 1.5 }}
                       />
-                      <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>
+                      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
                         {item.code}
                       </Typography>
                     </Box>
 
-                    <Typography variant="h5" sx={{ fontWeight: 800, color: '#0f172a', mb: 1 }}>
+                    <Typography variant="h5" sx={{ fontWeight: 800, color: 'text.primary', mb: 1 }}>
                       {item.title}
                     </Typography>
 
@@ -141,14 +143,14 @@ export default function PoliciesPage() {
                       {item.description}
                     </Typography>
 
-                    <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 3, mb: 2, border: '1px solid #f1f5f9' }}>
+                    <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 3, mb: 2, border: '1px solid', borderColor: 'divider' }}>
                       <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 600 }}>
                         Maximum Coverage Limit
                       </Typography>
-                      <Typography variant="h4" sx={{ fontWeight: 800, color: '#059669', my: 0.5, letterSpacing: '-0.02em' }}>
+                      <Typography variant="h4" sx={{ fontWeight: 800, color: 'success.main', my: 0.5, letterSpacing: '-0.02em' }}>
                         ₹{item.max_coverage?.toLocaleString('en-IN')}
                       </Typography>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'primary.main' }}>
                         ₹{item.base_premium?.toLocaleString('en-IN')} <Typography component="span" variant="caption" color="text.secondary">/ year ({item.term_months} months term)</Typography>
                       </Typography>
                     </Box>
@@ -156,10 +158,10 @@ export default function PoliciesPage() {
                     <List size="small" disablePadding>
                       {featureList.map((feat, i) => (
                         <ListItem key={i} disablePadding sx={{ py: 0.4 }}>
-                          <ListItemIcon sx={{ minWidth: 24, color: '#10b981' }}>
+                          <ListItemIcon sx={{ minWidth: 24, color: 'success.main' }}>
                             <CheckCircleIcon sx={{ fontSize: 16 }} />
                           </ListItemIcon>
-                          <ListItemText primary={feat} primaryTypographyProps={{ fontSize: '0.8rem', color: '#475569', fontWeight: 500 }} />
+                          <ListItemText primary={feat} primaryTypographyProps={{ fontSize: '0.8rem', color: 'text.secondary', fontWeight: 500 }} />
                         </ListItem>
                       ))}
                     </List>
@@ -187,7 +189,7 @@ export default function PoliciesPage() {
 
       {/* TAB 1: PURCHASED POLICIES */}
       {tab === 1 && (
-        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2 }}>
+        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2, bgcolor: 'background.paper', borderColor: 'divider' }}>
           <Table>
             <TableHead>
               <TableRow>
@@ -208,17 +210,17 @@ export default function PoliciesPage() {
                 </TableRow>
               ) : (
                 policies.map((p) => (
-                  <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
-                    <TableCell sx={{ fontWeight: 800, color: '#1e3a8a' }}>{p.policy_number}</TableCell>
+                  <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                    <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>{p.policy_number}</TableCell>
                     <TableCell>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{p.title}</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>{p.title}</Typography>
                       <Typography variant="caption" color="text.secondary">{p.type}</Typography>
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 800, color: '#059669' }}>
+                    <TableCell sx={{ fontWeight: 800, color: 'success.main' }}>
                       ₹{p.coverage_amount?.toLocaleString('en-IN')}
                     </TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
-                    <TableCell sx={{ color: '#64748b', fontSize: '0.82rem' }}>
+                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
                       {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
                     </TableCell>
                     <TableCell>
@@ -238,19 +240,19 @@ export default function PoliciesPage() {
         <DialogContent>
           {msg && <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>{msg}</Alert>}
           {selectedCatalog && (
-            <Box sx={{ p: 2.5, bgcolor: '#f8fafc', borderRadius: 3, mb: 2, border: '1px solid #e2e8f0' }}>
+            <Box sx={{ p: 2.5, bgcolor: 'action.hover', borderRadius: 3, mb: 2, border: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                 <ShieldIcon color="primary" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#1e3a8a' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 800, color: 'primary.main' }}>
                   {selectedCatalog.title}
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
                 {selectedCatalog.description}
               </Typography>
-              <Box sx={{ pt: 1.5, borderTop: '1px dashed #cbd5e1', display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569' }}>Annual Premium:</Typography>
-                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#059669' }}>
+              <Box sx={{ pt: 1.5, borderTop: '1px dashed', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>Annual Premium:</Typography>
+                <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'success.main' }}>
                   ₹{selectedCatalog.base_premium?.toLocaleString('en-IN')}
                 </Typography>
               </Box>

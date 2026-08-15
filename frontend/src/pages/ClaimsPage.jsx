@@ -79,7 +79,7 @@ export default function ClaimsPage() {
     <Box sx={{ pb: 6 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+          <Typography variant="h4" sx={{ fontWeight: 800, color: 'text.primary', letterSpacing: '-0.02em' }}>
             Submit & Track Claims
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -116,7 +116,7 @@ export default function ClaimsPage() {
         </Box>
       </Box>
 
-      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', p: { xs: 1, sm: 2 }, borderRadius: 4 }}>
+      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', p: { xs: 1, sm: 2 }, borderRadius: 4, bgcolor: 'background.paper', borderColor: 'divider' }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -138,16 +138,16 @@ export default function ClaimsPage() {
               </TableRow>
             ) : (
               claims.map((c) => (
-                <TableRow key={c.id} hover sx={{ '&:hover': { bgcolor: '#f8fafc' } }}>
-                  <TableCell sx={{ fontWeight: 800, color: '#1e3a8a' }}>{c.claim_number}</TableCell>
+                <TableRow key={c.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                  <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>{c.claim_number}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{c.policy?.policy_number || 'N/A'}</TableCell>
                   <TableCell>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>{c.reason}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>{c.reason}</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', maxWidth: 240, noWrap: true }}>
                       {c.description}
                     </Typography>
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 800, color: '#0f172a' }}>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>
                     ₹{c.amount?.toLocaleString('en-IN')}
                   </TableCell>
                   <TableCell>

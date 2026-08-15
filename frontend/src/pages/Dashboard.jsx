@@ -200,10 +200,10 @@ export default function Dashboard() {
       <Grid container spacing={3}>
         {/* Active Policies Panel */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', bgcolor: 'background.paper', borderColor: 'divider' }}>
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.2 }}>
                   <ShieldIcon color="primary" /> My Active Policies ({policies.length})
                 </Typography>
                 <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/policies')}>
@@ -212,7 +212,7 @@ export default function Dashboard() {
               </Box>
 
               {policies.length === 0 ? (
-                <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+                <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 3 }}>
                   <Typography variant="body2" color="text.secondary">No active policies found.</Typography>
                   <Button variant="outlined" sx={{ mt: 2 }} onClick={() => navigate('/policies/catalog')}>
                     Browse Policy Catalog
@@ -220,10 +220,10 @@ export default function Dashboard() {
                 </Box>
               ) : (
                 policies.slice(0, 4).map((p) => (
-                  <Card key={p.id} sx={{ mb: 2, bgcolor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                  <Card key={p.id} sx={{ mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                     <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1e3a8a' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: 'primary.main' }}>
                           {p.title}
                         </Typography>
                         <Chip label={p.status} color="success" size="small" sx={{ fontWeight: 700, borderRadius: 1.5 }} />
@@ -231,11 +231,11 @@ export default function Dashboard() {
                       <Typography variant="caption" color="text.secondary" display="block" sx={{ fontWeight: 500 }}>
                         Policy #: <strong>{p.policy_number}</strong> | Type: {p.type}
                       </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5, pt: 1.2, borderTop: '1px dashed #f1f5f9' }}>
-                        <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5, pt: 1.2, borderTop: '1px dashed', borderColor: 'divider' }}>
+                        <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 700 }}>
                           Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
                           Expires: {new Date(p.end_date).toLocaleDateString('en-IN')}
                         </Typography>
                       </Box>
@@ -249,10 +249,10 @@ export default function Dashboard() {
 
         {/* Submitted Claims Panel */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', bgcolor: 'background.paper', borderColor: 'divider' }}>
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-                <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: 'text.primary', display: 'flex', alignItems: 'center', gap: 1.2 }}>
                   <ReceiptLongIcon color="warning" /> My Claims Tracker ({claims.length})
                 </Typography>
                 <Button size="small" endIcon={<ArrowForwardIcon />} onClick={() => navigate('/claims')}>
@@ -261,7 +261,7 @@ export default function Dashboard() {
               </Box>
 
               {claims.length === 0 ? (
-                <Box sx={{ p: 4, textAlign: 'center', bgcolor: '#f8fafc', borderRadius: 3 }}>
+                <Box sx={{ p: 4, textAlign: 'center', bgcolor: 'action.hover', borderRadius: 3 }}>
                   <Typography variant="body2" color="text.secondary">No submitted claims found.</Typography>
                   <Button variant="contained" sx={{ mt: 2 }} startIcon={<AddIcon />} onClick={() => setOpenClaimModal(true)}>
                     File First Claim
@@ -269,10 +269,10 @@ export default function Dashboard() {
                 </Box>
               ) : (
                 claims.slice(0, 4).map((c) => (
-                  <Card key={c.id} sx={{ mb: 2, bgcolor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                  <Card key={c.id} sx={{ mb: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
                     <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, alignItems: 'center' }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#0f172a' }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
                           {c.claim_number} - {c.reason}
                         </Typography>
                         {getStatusChip(c.status)}

@@ -31,7 +31,6 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
     }
   };
 
-  // Customer Only Menu Items
   const navItems = [
     { label: 'Customer Overview', path: '/dashboard', icon: <DashboardIcon /> },
     { label: 'Policy Catalog', path: '/policies/catalog', icon: <CategoryIcon /> },
@@ -40,7 +39,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
   ];
 
   const sidebarContent = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', p: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', p: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
       <Box>
         {/* Role Badge Indicator */}
         <Box sx={{ px: 1, mb: 2 }}>
@@ -53,7 +52,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           />
         </Box>
 
-        <Typography variant="overline" sx={{ px: 2, color: '#94a3b8', fontWeight: 700, letterSpacing: 1 }}>
+        <Typography variant="overline" sx={{ px: 2, color: 'text.secondary', fontWeight: 700, letterSpacing: 1 }}>
           Customer Menu
         </Typography>
 
@@ -69,14 +68,14 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
                   }}
                   sx={{
                     borderRadius: 2,
-                    bgcolor: isActive ? '#eff6ff' : 'transparent',
-                    color: isActive ? '#1e3a8a' : '#475569',
+                    bgcolor: isActive ? 'action.selected' : 'transparent',
+                    color: isActive ? 'primary.main' : 'text.primary',
                     '&:hover': {
-                      bgcolor: isActive ? '#dbeafe' : '#f8fafc',
+                      bgcolor: 'action.hover',
                     },
                   }}
                 >
-                  <ListItemIcon sx={{ color: isActive ? '#1e3a8a' : '#64748b', minWidth: 40 }}>
+                  <ListItemIcon sx={{ color: isActive ? 'primary.main' : 'text.secondary', minWidth: 40 }}>
                     {item.icon}
                   </ListItemIcon>
                   <ListItemText
@@ -100,13 +99,14 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           onClick={handleExportCSV}
           sx={{
             borderRadius: 2,
-            border: '1px solid #e2e8f0',
-            bgcolor: '#f8fafc',
-            color: '#334155',
-            '&:hover': { bgcolor: '#f1f5f9' },
+            border: '1px solid',
+            borderColor: 'divider',
+            bgcolor: 'background.default',
+            color: 'text.primary',
+            '&:hover': { bgcolor: 'action.hover' },
           }}
         >
-          <ListItemIcon sx={{ minWidth: 36, color: '#0d9488' }}>
+          <ListItemIcon sx={{ minWidth: 36, color: 'secondary.main' }}>
             <DownloadIcon />
           </ListItemIcon>
           <ListItemText
@@ -128,7 +128,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'background.paper' },
         }}
       >
         {sidebarContent}
@@ -141,10 +141,12 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
           width: 240,
           minHeight: 'calc(100vh - 110px)',
           borderRadius: 0,
-          borderRight: '1px solid #e2e8f0',
-          bgcolor: '#ffffff',
+          borderRight: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper',
           display: { xs: 'none', md: 'block' },
-          flexShrink: 0
+          flexShrink: 0,
+          transition: 'background-color 0.3s ease, border-color 0.3s ease'
         }}
       >
         {sidebarContent}

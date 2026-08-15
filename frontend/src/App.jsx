@@ -16,7 +16,7 @@ function ProtectedLayout() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
         <CircularProgress />
       </Box>
     );
@@ -27,7 +27,7 @@ function ProtectedLayout() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', display: 'flex', flexDirection: 'column', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
       <Navbar onMobileMenuToggle={() => setMobileOpen(!mobileOpen)} />
       <Box sx={{ display: 'flex', flexGrow: 1, overflowX: 'hidden' }}>
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />

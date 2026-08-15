@@ -128,7 +128,7 @@ export default function Dashboard() {
             </Box>
             <Box>
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
-                Welcome, {user?.full_name}
+                Welcome, {user?.full_name?.replace(/\s*\([^)]*\)/, '')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#93c5fd', mt: 0.5, fontWeight: 500 }}>
                 Manage your active insurance policies, submit claim requests, and track reviews.

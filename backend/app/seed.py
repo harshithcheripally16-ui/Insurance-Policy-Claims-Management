@@ -19,7 +19,7 @@ def seed_db():
     admin = User(
         email="admin@insure.com",
         password_hash=hashed_password,
-        full_name="Aarav Sharma (Admin)",
+        full_name="Aarav Sharma",
         role=UserRole.ADMIN,
         phone="+91 98765 43210",
         address="402 Cyber City, DLF Phase 2, Gurugram, Haryana"
@@ -27,7 +27,7 @@ def seed_db():
     officer = User(
         email="officer@insure.com",
         password_hash=hashed_password,
-        full_name="Rajesh Kulkarni (Claims Officer)",
+        full_name="Rajesh Kulkarni",
         role=UserRole.CLAIMS_OFFICER,
         phone="+91 98765 43211",
         address="102 Commercial Street, Indiranagar, Bengaluru, Karnataka"
@@ -35,7 +35,7 @@ def seed_db():
     agent = User(
         email="agent@insure.com",
         password_hash=hashed_password,
-        full_name="Priya Nair (Insurance Agent)",
+        full_name="Priya Nair",
         role=UserRole.AGENT,
         phone="+91 98765 43212",
         address="501 BKC Towers, Bandra Kurla Complex, Mumbai, Maharashtra"
@@ -43,7 +43,7 @@ def seed_db():
     customer = User(
         email="customer@insure.com",
         password_hash=hashed_password,
-        full_name="Vikram Patel (Customer)",
+        full_name="Vikram Patel",
         role=UserRole.CUSTOMER,
         phone="+91 98765 43213",
         address="742 MG Road, Satellite, Ahmedabad, Gujarat"

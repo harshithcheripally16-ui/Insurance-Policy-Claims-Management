@@ -174,7 +174,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                 </Avatar>
                 <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, fontSize: '0.85rem', lineHeight: 1.2 }}>
-                    {user.full_name}
+                    {user.full_name?.replace(/\s*\([^)]*\)/, '')}
                   </Typography>
                   <Typography variant="caption" sx={{ color: '#059669', fontWeight: 700, fontSize: '0.7rem' }}>
                     Customer Account
@@ -191,7 +191,7 @@ export default function Navbar({ onMobileMenuToggle }) {
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
               >
                 <Box sx={{ px: 2, py: 1.5 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{user.full_name}</Typography>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{user.full_name?.replace(/\s*\([^)]*\)/, '')}</Typography>
                   <Typography variant="caption" color="text.secondary" display="block">{user.email}</Typography>
                 </Box>
                 <Divider sx={{ my: 0.5 }} />

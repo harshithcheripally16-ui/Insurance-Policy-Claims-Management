@@ -98,8 +98,20 @@ export default function Login() {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 8, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 3, textAlign: 'center' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: (theme) => theme.palette.mode === 'dark'
+          ? 'linear-gradient(180deg, #081226 0%, #0c1a35 50%, #102142 100%)'
+          : 'linear-gradient(180deg, #ffffff 0%, #edf5ff 45%, #e1effc 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4
+      }}
+    >
+      <Container maxWidth="xs">
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 4, textAlign: 'center' }}>
         <Box sx={{ display: 'inline-flex', p: 1.5, bgcolor: 'action.hover', borderRadius: '50%', mb: 1 }}>
           <SupportAgentIcon sx={{ fontSize: 40, color: 'primary.main' }} />
         </Box>
@@ -264,5 +276,6 @@ export default function Login() {
         </DialogActions>
       </Dialog>
     </Container>
-  );
+  </Box>
+);
 }

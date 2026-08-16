@@ -29,7 +29,19 @@ function ProtectedLayout() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary', display: 'flex', flexDirection: 'column', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: (theme) => theme.palette.mode === 'dark'
+          ? 'linear-gradient(180deg, #081226 0%, #0c1a35 50%, #102142 100%)'
+          : 'linear-gradient(180deg, #ffffff 0%, #edf5ff 45%, #e1effc 100%)',
+        backgroundAttachment: 'fixed',
+        color: 'text.primary',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'background 0.3s ease, color 0.3s ease'
+      }}
+    >
       <Navbar onMobileMenuToggle={() => setMobileOpen(!mobileOpen)} />
       <Box sx={{ display: 'flex', flexGrow: 1, overflowX: 'hidden' }}>
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />

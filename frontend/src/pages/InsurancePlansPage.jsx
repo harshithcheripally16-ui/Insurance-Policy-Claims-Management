@@ -248,7 +248,7 @@ export default function InsurancePlansPage() {
           >
             {customers.map((c) => (
               <MenuItem key={c.id} value={c.id}>
-                {c.full_name?.replace(/\s*\([^)]*\)/, '')} ({c.email})
+                {c.full_name?.replace(/\s*\([^)]*\)/, '')}
               </MenuItem>
             ))}
           </TextField>

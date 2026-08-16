@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Box, Grid, Paper, Typography, Button, Table, TableBody, TableCell,
-  TableHead, TableRow, TableContainer, Chip, Card, CardContent
+  Box, Grid, Paper, Typography, Button, Card, CardContent, Chip
 } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -11,7 +10,9 @@ import PeopleIcon from '@mui/icons-material/People';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
 import { useNavigate } from 'react-router-dom';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, Cell } from 'recharts';
 import StatCard from '../components/StatCard';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -33,7 +34,7 @@ export default function Dashboard() {
       ]);
       setStats(resStats.data);
       setPolicies(resPolicies.data);
-      setCustomers(resCustomers.data);
+      setCustomers(resCust.data || resCustomers.data);
     } catch (err) {
       console.error('Error fetching dashboard data', err);
     } finally {
@@ -48,6 +49,21 @@ export default function Dashboard() {
   if (loading || !stats) {
     return <Typography sx={{ p: 4 }}>Loading dashboard...</Typography>;
   }
+
+  // AGGREGATE PERFORMANCE DATA FOR RECHARTS
+  const categoriesList = ['Health', 'Auto', 'Life', 'Home'];
+  const colorsList = ['#ff5a00', '#002970', '#00a896', '#0284c7'];
+
+  const salesPerformanceData = categoriesList.map((cat, idx) => {
+    const catPolicies = policies.filter(p => p.type?.toUpperCase() === cat.toUpperCase());
+    const totalPremium = catPolicies.reduce((sum, p) => sum + (p.premium || 0), 0);
+    return {
+      category: cat,
+      policies: catPolicies.length,
+      revenue: totalPremium,
+      color: colorsList[idx]
+    };
+  });
 
   return (
     <Box sx={{ pb: 6 }}>
@@ -161,6 +177,45 @@ export default function Dashboard() {
           />
         </Grid>
       </Grid>
+
+      {/* FEATURE 3: RECHARTS MONTHLY SALES & CATEGORY PERFORMANCE CHART */}
+      <Paper elevation={0} sx={{ p: 3.5, mb: 4, borderRadius: 4, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+            <ShowChartIcon sx={{ color: '#ff5a00', fontSize: 26 }} />
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 800, color: 'secondary.main', lineHeight: 1.2 }}>
+                Policy Category Sales & Revenue Performance
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
+                Breakdown of total premium revenue (₹) and policies issued per plan category (Health, Auto, Life, Home).
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box sx={{ width: '100%', height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={salesPerformanceData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+              <XAxis dataKey="category" tick={{ fontWeight: 700, fontSize: 13 }} />
+              <YAxis yAxisId="left" orientation="left" stroke="#ff5a00" tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
+              <YAxis yAxisId="right" orientation="right" stroke="#002970" allowDecimals={false} />
+              <Tooltip
+                formatter={(value, name) => name === 'revenue' ? [`₹${value.toLocaleString('en-IN')}`, 'Premium Revenue'] : [value, 'Policies Issued']}
+                contentStyle={{ borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', border: 'none' }}
+              />
+              <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700 }} />
+              <Bar yAxisId="left" dataKey="revenue" name="Premium Revenue (₹)" radius={[6, 6, 0, 0]}>
+                {salesPerformanceData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Bar>
+              <Bar yAxisId="right" dataKey="policies" name="Policies Issued" fill="#002970" radius={[6, 6, 0, 0]} barSize={24} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      </Paper>
 
       {/* AGENT POLICY & CUSTOMER PANELS */}
       <Grid container spacing={3}>

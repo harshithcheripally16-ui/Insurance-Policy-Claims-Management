@@ -2,22 +2,32 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
   Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, TextField, MenuItem,
-  IconButton, Tooltip, InputAdornment
+  IconButton, Tooltip, InputAdornment, Grid
 } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { generatePolicyPDF } from '../utils/pdfGenerator';
 
 export default function PoliciesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [policies, setPolicies] = useState([]);
+
+  // FILTER BAR STATE
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [startDateFilter, setStartDateFilter] = useState('');
+  const [endDateFilter, setEndDateFilter] = useState('');
 
   // EDIT Policy Modal State
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -93,11 +103,41 @@ export default function PoliciesPage() {
     }
   };
 
-  const filteredPolicies = policies.filter(p =>
-    p.policy_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.customer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter Reset
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setCategoryFilter('ALL');
+    setStatusFilter('ALL');
+    setStartDateFilter('');
+    setEndDateFilter('');
+  };
+
+  // Multi-criteria Filtering
+  const filteredPolicies = policies.filter(p => {
+    // 1. Text Search
+    const matchesSearch =
+      p.policy_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.customer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // 2. Category Filter
+    const matchesCategory =
+      categoryFilter === 'ALL' || p.type?.toUpperCase() === categoryFilter.toUpperCase();
+
+    // 3. Status Filter
+    const matchesStatus =
+      statusFilter === 'ALL' || p.status === statusFilter;
+
+    // 4. Start Date Range Filter
+    const matchesStartDate =
+      !startDateFilter || new Date(p.start_date) >= new Date(startDateFilter);
+
+    // 5. End Date Range Filter
+    const matchesEndDate =
+      !endDateFilter || new Date(p.end_date) <= new Date(endDateFilter);
+
+    return matchesSearch && matchesCategory && matchesStatus && matchesStartDate && matchesEndDate;
+  });
 
   const getStatusChip = (status) => {
     const map = {
@@ -119,7 +159,7 @@ export default function PoliciesPage() {
             <ShieldIcon sx={{ color: '#ff5a00' }} /> Customer Policies ({policies.length})
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
-            Inspect, edit details, and manage active policy coverages assigned to your customers.
+            Inspect, edit details, filter parameters, and generate official policy certificates.
           </Typography>
         </Box>
 
@@ -140,89 +180,189 @@ export default function PoliciesPage() {
         </Alert>
       )}
 
-      {/* ACTIVE CUSTOMER POLICIES TABLE */}
-      <Box>
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <TextField
-            size="small"
-            placeholder="Search by Policy Number, Title, or Customer..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ width: 360 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-          />
+      {/* ADVANCED MULTI-FILTER BAR PANEL */}
+      <Paper elevation={0} sx={{ p: 2.5, mb: 3.5, borderRadius: 4, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <FilterAltIcon sx={{ color: '#ff5a00', fontSize: 22 }} />
+          <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'secondary.main' }}>
+            Filter & Search Policy Coverages
+          </Typography>
         </Box>
 
-        <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2, bgcolor: 'background.paper', borderColor: 'divider' }}>
-          <Table>
-            <TableHead>
+        <Grid container spacing={2} alignItems="center">
+          {/* Text Search */}
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search Policy #, Title, Customer..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          {/* Plan Category Filter */}
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Plan Category"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <MenuItem value="ALL">All Categories</MenuItem>
+              <MenuItem value="HEALTH">Health</MenuItem>
+              <MenuItem value="AUTO">Auto</MenuItem>
+              <MenuItem value="LIFE">Life</MenuItem>
+              <MenuItem value="HOME">Home</MenuItem>
+            </TextField>
+          </Grid>
+
+          {/* Policy Status Filter */}
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              select
+              fullWidth
+              size="small"
+              label="Policy Status"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <MenuItem value="ALL">All Statuses</MenuItem>
+              <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+              <MenuItem value="SUSPENDED">SUSPENDED</MenuItem>
+              <MenuItem value="EXPIRED">EXPIRED</MenuItem>
+              <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+            </TextField>
+          </Grid>
+
+          {/* Start Date Filter */}
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              fullWidth
+              size="small"
+              type="date"
+              label="Valid From"
+              InputLabelProps={{ shrink: true }}
+              value={startDateFilter}
+              onChange={(e) => setStartDateFilter(e.target.value)}
+            />
+          </Grid>
+
+          {/* End Date Filter */}
+          <Grid item xs={12} sm={6} md={2}>
+            <TextField
+              fullWidth
+              size="small"
+              type="date"
+              label="Valid Until"
+              InputLabelProps={{ shrink: true }}
+              value={endDateFilter}
+              onChange={(e) => setEndDateFilter(e.target.value)}
+            />
+          </Grid>
+
+          {/* Reset Filters */}
+          <Grid item xs={12} md={1}>
+            <Tooltip title="Reset All Active Filters">
+              <Button
+                fullWidth
+                size="small"
+                variant="outlined"
+                color="secondary"
+                onClick={handleResetFilters}
+                sx={{ py: 0.9, minWidth: 0, fontWeight: 700 }}
+              >
+                <RestartAltIcon fontSize="small" />
+              </Button>
+            </Tooltip>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* ACTIVE CUSTOMER POLICIES TABLE */}
+      <TableContainer component={Paper} elevation={0} sx={{ overflowX: 'auto', borderRadius: 4, p: 2, bgcolor: 'background.paper', borderColor: 'divider' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Policy Number</TableCell>
+              <TableCell>Plan Title & Type</TableCell>
+              <TableCell>Assigned Customer</TableCell>
+              <TableCell>Coverage Amount (₹)</TableCell>
+              <TableCell>Annual Premium (₹)</TableCell>
+              <TableCell>Validity Term</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Manage</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredPolicies.length === 0 ? (
               <TableRow>
-                <TableCell>Policy Number</TableCell>
-                <TableCell>Plan Title & Type</TableCell>
-                <TableCell>Assigned Customer</TableCell>
-                <TableCell>Coverage Amount (₹)</TableCell>
-                <TableCell>Annual Premium (₹)</TableCell>
-                <TableCell>Validity Term</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Manage</TableCell>
+                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">No customer policy records match your filter criteria.</Typography>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredPolicies.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body2" color="text.secondary">No customer policy records found.</Typography>
+            ) : (
+              filteredPolicies.map((p) => (
+                <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                  <TableCell sx={{ fontWeight: 800, color: 'secondary.main' }}>{p.policy_number}</TableCell>
+                  <TableCell>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>{p.title}</Typography>
+                    <Typography variant="caption" color="text.secondary">{p.type}</Typography>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>
+                    {p.customer?.full_name?.replace(/\s*\([^)]*\)/, '') || 'Customer'}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: 'success.main' }}>
+                    ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
+                    {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
+                  </TableCell>
+                  <TableCell>
+                    {getStatusChip(p.status)}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Box sx={{ display: 'flex', gap: 0.8, justifyContent: 'flex-end' }}>
+                      {/* One-Click PDF Generation Button */}
+                      <Tooltip title="Download Policy Certificate (PDF)">
+                        <IconButton
+                          size="small"
+                          sx={{ color: '#00a896', '&:hover': { bgcolor: 'rgba(0, 168, 150, 0.1)' } }}
+                          onClick={() => generatePolicyPDF(p)}
+                        >
+                          <PictureAsPdfIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Edit Policy Details">
+                        <IconButton size="small" color="primary" onClick={() => handleOpenEdit(p)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+
+                      <Tooltip title="Cancel Policy Coverage">
+                        <IconButton size="small" color="error" onClick={() => { setDeletingPolicy(p); setOpenDeleteModal(true); }}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
                   </TableCell>
                 </TableRow>
-              ) : (
-                filteredPolicies.map((p) => (
-                  <TableRow key={p.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
-                    <TableCell sx={{ fontWeight: 800, color: 'secondary.main' }}>{p.policy_number}</TableCell>
-                    <TableCell>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'text.primary' }}>{p.title}</Typography>
-                      <Typography variant="caption" color="text.secondary">{p.type}</Typography>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>
-                      {p.customer?.full_name?.replace(/\s*\([^)]*\)/, '') || 'Customer'}
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 800, color: 'success.main' }}>
-                      ₹{p.coverage_amount?.toLocaleString('en-IN')}
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 700 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
-                      {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
-                    </TableCell>
-                    <TableCell>
-                      {getStatusChip(p.status)}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                        <Tooltip title="Edit Policy Details">
-                          <IconButton size="small" color="primary" onClick={() => handleOpenEdit(p)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-
-                        <Tooltip title="Cancel Policy Coverage">
-                          <IconButton size="small" color="error" onClick={() => { setDeletingPolicy(p); setOpenDeleteModal(true); }}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Box>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {/* EDIT POLICY MODAL */}
       <Dialog open={openEditModal} onClose={() => setOpenEditModal(false)} maxWidth="xs" fullWidth>

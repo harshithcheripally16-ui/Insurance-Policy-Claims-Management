@@ -33,8 +33,8 @@ export default function Dashboard() {
         api.get('/users?role=CUSTOMER')
       ]);
       setStats(resStats.data);
-      setPolicies(resPolicies.data);
-      setCustomers(resCust.data || resCustomers.data);
+      setPolicies(resPolicies.data || []);
+      setCustomers(resCustomers?.data || []);
     } catch (err) {
       console.error('Error fetching dashboard data', err);
     } finally {

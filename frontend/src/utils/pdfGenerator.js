@@ -113,7 +113,7 @@ export const generatePolicyPDF = (policy) => {
     doc.setFont('helvetica', i === 0 || i === 3 ? 'bold' : 'normal');
     if (i === 3) doc.setTextColor(0, 168, 150); // Teal for coverage
     else doc.setTextColor(...textColor);
-    doc.text(row[1], 100, y + 6.5);
+    doc.text(String(row[1] || 'N/A'), 100, y + 6.5);
 
     y += 10;
   });

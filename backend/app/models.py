@@ -90,6 +90,7 @@ class Policy(Base):
 
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_reminder_sent = Column(DateTime, nullable=True)
 
     # Relationships
     customer = relationship("User", foreign_keys=[customer_id], back_populates="customer_policies")

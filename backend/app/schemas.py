@@ -104,6 +104,7 @@ class PolicyResponse(BaseModel):
     agent_id: Optional[int] = None
     agent: Optional[UserResponse] = None
     created_at: datetime
+    last_reminder_sent: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

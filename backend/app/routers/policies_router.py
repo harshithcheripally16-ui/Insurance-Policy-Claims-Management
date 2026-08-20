@@ -11,6 +11,7 @@ from app.schemas import (
 )
 from app.dependencies import get_current_user, require_roles
 from app.services.notification import create_notification
+from app.services.smtp_service import send_policy_reminder_email
 
 router = APIRouter(prefix="/api", tags=["Policies"])
 
@@ -177,3 +178,48 @@ def delete_policy(
     )
 
     return {"message": f"Policy {policy_num} deleted successfully"}
+
+@router.post("/policies/{id}/send-reminder", response_model=PolicyResponse)
+def send_policy_reminder(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.AGENT, UserRole.ADMIN]))
+):
+    policy = db.query(Policy).filter(Policy.id == id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    customer = policy.customer
+    if not customer:
+        raise HTTPException(status_code=400, detail="Policy has no assigned customer profile")
+
+    end_date_str = policy.end_date.strftime("%d %b %Y") if policy.end_date else "N/A"
+    cust_name = customer.full_name.split("(")[0].strip() if customer.full_name else "Valued Customer"
+
+    # Send SMTP HTML Email
+    send_policy_reminder_email(
+        to_email=customer.email,
+        customer_name=cust_name,
+        policy_number=policy.policy_number,
+        title=policy.title,
+        coverage_amount=policy.coverage_amount,
+        premium=policy.premium,
+        end_date_str=end_date_str
+    )
+
+    # Update timestamp
+    policy.last_reminder_sent = datetime.now()
+    db.commit()
+    db.refresh(policy)
+
+    # In-App Notification
+    create_notification(
+        db=db,
+        user_id=customer.id,
+        title="Policy Renewal Notice",
+        message=f"Renewal notice sent for policy {policy.policy_number} ({policy.title}). Please complete renewal before {end_date_str}.",
+        notification_type="POLICY"
+    )
+
+    return policy
+

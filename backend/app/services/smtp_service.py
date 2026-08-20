@@ -190,3 +190,169 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "REGISTRATION") 
     html = generate_otp_email_html(to_email, otp_code, title, desc)
     plain = f"{title}\n\nYour 6-digit verification code is: {otp_code}\n\nThis code expires in 10 minutes."
     return send_smtp_email(to_email, subject, html, plain)
+
+def generate_reminder_email_html(customer_name: str, policy_number: str, title: str, coverage_amount: float, premium: float, end_date_str: str) -> str:
+    return f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Policy Renewal Reminder - InsurCare PRO</title>
+      <style>
+        body {{
+          font-family: 'Plus Jakarta Sans', 'Segoe UI', Helvetica, Arial, sans-serif;
+          background-color: #f4f7fa;
+          margin: 0;
+          padding: 0;
+          color: #001e54;
+        }}
+        .container {{
+          max-width: 580px;
+          margin: 30px auto;
+          background: #ffffff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 10px 30px rgba(0, 41, 112, 0.08);
+          border: 1px solid #e2e8f0;
+        }}
+        .header {{
+          background: linear-gradient(135deg, #001e54 0%, #002970 100%);
+          padding: 32px 24px;
+          text-align: center;
+        }}
+        .logo-text {{
+          color: #ffffff;
+          font-size: 24px;
+          font-weight: 900;
+          letter-spacing: -0.5px;
+          margin: 0;
+        }}
+        .logo-badge {{
+          background-color: #ff5a00;
+          color: #ffffff;
+          font-size: 11px;
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-weight: 800;
+          margin-left: 6px;
+          vertical-align: middle;
+        }}
+        .content {{
+          padding: 36px 32px;
+        }}
+        .title {{
+          font-size: 20px;
+          font-weight: 800;
+          color: #002970;
+          margin-top: 0;
+          margin-bottom: 8px;
+        }}
+        .description {{
+          font-size: 14px;
+          color: #475569;
+          line-height: 1.6;
+          margin-bottom: 24px;
+        }}
+        .policy-card {{
+          background: #f8fafc;
+          border: 1.5px solid #e2e8f0;
+          border-left: 4px solid #ff5a00;
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }}
+        .policy-row {{
+          display: flex;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px dashed #e2e8f0;
+          font-size: 13px;
+        }}
+        .label {{
+          font-weight: 700;
+          color: #64748b;
+        }}
+        .val {{
+          font-weight: 800;
+          color: #001e54;
+        }}
+        .cta-btn {{
+          display: block;
+          width: 200px;
+          margin: 24px auto 0 auto;
+          text-align: center;
+          background: linear-gradient(135deg, #ff5a00 0%, #ff7a28 100%);
+          color: #ffffff !important;
+          text-decoration: none;
+          font-size: 14px;
+          font-weight: 800;
+          padding: 12px 24px;
+          border-radius: 8px;
+        }}
+        .footer {{
+          background-color: #f8fafc;
+          padding: 20px 32px;
+          text-align: center;
+          border-top: 1px solid #f1f5f9;
+          font-size: 12px;
+          color: #94a3b8;
+        }}
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1 class="logo-text">InsurCare <span class="logo-badge">PRO</span></h1>
+        </div>
+        <div class="content">
+          <h2 class="title">Policy Coverage Renewal Notice</h2>
+          <p class="description">
+            Dear <strong>{customer_name}</strong>,<br><br>
+            This is an important reminder from your Insurance Agent regarding your active policy coverage. Please review your policy parameter details below:
+          </p>
+
+          <div class="policy-card">
+            <div class="policy-row">
+              <span class="label">Policy Number:</span>
+              <span class="val">{policy_number}</span>
+            </div>
+            <div class="policy-row">
+              <span class="label">Insurance Plan Title:</span>
+              <span class="val">{title}</span>
+            </div>
+            <div class="policy-row">
+              <span class="label">Maximum Coverage Limit:</span>
+              <span class="val" style="color: #00a896;">Rs. {coverage_amount:,.2f}</span>
+            </div>
+            <div class="policy-row">
+              <span class="label">Annual Premium:</span>
+              <span class="val">Rs. {premium:,.2f}</span>
+            </div>
+            <div class="policy-row">
+              <span class="label">Expiration / Renewal Date:</span>
+              <span class="val" style="color: #ff5a00;">{end_date_str}</span>
+            </div>
+          </div>
+
+          <p class="description">
+            To ensure continuous protection with zero interruption in your coverage benefits, please complete your renewal.
+          </p>
+
+          <a href="http://localhost:3000/policies" class="cta-btn">View Policy Details</a>
+        </div>
+        <div class="footer">
+          &copy; 2026 InsurCare Policy & Claims Management System | Sent by Priya Nair (Verified Agent)
+        </div>
+      </div>
+    </body>
+    </html>
+    """
+
+def send_policy_reminder_email(to_email: str, customer_name: str, policy_number: str, title: str, coverage_amount: float, premium: float, end_date_str: str) -> bool:
+    """Sends an official Policy Renewal Reminder HTML email to the customer."""
+    subject = f"Notice: Policy Renewal Reminder for {policy_number} ({title})"
+    html = generate_reminder_email_html(customer_name, policy_number, title, coverage_amount, premium, end_date_str)
+    plain = f"Policy Renewal Notice for {customer_name}\n\nPolicy Number: {policy_number}\nPlan: {title}\nRenewal Date: {end_date_str}\n\nPlease contact your Insurance Agent to renew your policy coverage."
+    return send_smtp_email(to_email, subject, html, plain)
+

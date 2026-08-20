@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, TableContainer,
   Chip, Button, Dialog, DialogTitle, DialogContent, DialogActions, Alert, TextField, MenuItem,
-  IconButton, Tooltip, InputAdornment, Grid
+  IconButton, Tooltip, InputAdornment, Grid, CircularProgress
 } from '@mui/material';
 import ShieldIcon from '@mui/icons-material/Shield';
 import EditIcon from '@mui/icons-material/Edit';
@@ -10,6 +10,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import EmailIcon from '@mui/icons-material/Email';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useNavigate } from 'react-router-dom';
@@ -36,9 +37,25 @@ export default function PoliciesPage() {
 
   // DELETE Policy Modal State
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  const [deletingPolicy, setDeletingPolicy] = useState(null);
+  // SEND REMINDER Email State
+  const [sendingReminderId, setSendingReminderId] = useState(null);
 
   const [msg, setMsg] = useState({ type: '', text: '' });
+
+  const handleSendReminder = async (policy) => {
+    setSendingReminderId(policy.id);
+    setMsg({ type: '', text: '' });
+    try {
+      await api.post(`/policies/${policy.id}/send-reminder`);
+      const custEmail = policy.customer?.email || 'customer email';
+      setMsg({ type: 'success', text: `Policy renewal reminder email successfully delivered to ${custEmail}!` });
+      loadPolicies();
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to send policy reminder email' });
+    } finally {
+      setSendingReminderId(null);
+    }
+  };
 
   const loadPolicies = async () => {
     try {
@@ -300,13 +317,14 @@ export default function PoliciesPage() {
               <TableCell>Annual Premium (₹)</TableCell>
               <TableCell>Validity Term</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Last Reminder Sent</TableCell>
               <TableCell align="right">Manage</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredPolicies.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
                   <Typography variant="body2" color="text.secondary">No customer policy records match your filter criteria.</Typography>
                 </TableCell>
               </TableRow>
@@ -331,8 +349,35 @@ export default function PoliciesPage() {
                   <TableCell>
                     {getStatusChip(p.status)}
                   </TableCell>
+                  <TableCell sx={{ fontSize: '0.8rem' }}>
+                    {p.last_reminder_sent ? (
+                      <Chip
+                        label={new Date(p.last_reminder_sent).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        size="small"
+                        color="info"
+                        variant="outlined"
+                        sx={{ fontWeight: 700, fontSize: '0.7rem' }}
+                      />
+                    ) : (
+                      <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                        Not Sent Yet
+                      </Typography>
+                    )}
+                  </TableCell>
                   <TableCell align="right">
                     <Box sx={{ display: 'flex', gap: 0.8, justifyContent: 'flex-end' }}>
+                      {/* Send Email Reminder Button */}
+                      <Tooltip title="Send Policy Renewal Email Reminder">
+                        <IconButton
+                          size="small"
+                          disabled={sendingReminderId === p.id}
+                          sx={{ color: '#ff5a00', '&:hover': { bgcolor: 'rgba(255, 90, 0, 0.1)' } }}
+                          onClick={() => handleSendReminder(p)}
+                        >
+                          {sendingReminderId === p.id ? <CircularProgress size={18} color="inherit" /> : <EmailIcon fontSize="small" />}
+                        </IconButton>
+                      </Tooltip>
+
                       {/* One-Click PDF Generation Button */}
                       <Tooltip title="Download Policy Certificate (PDF)">
                         <IconButton

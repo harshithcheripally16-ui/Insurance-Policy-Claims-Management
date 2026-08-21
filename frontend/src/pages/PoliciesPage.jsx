@@ -77,9 +77,10 @@ export default function PoliciesPage() {
   const loadPolicies = async () => {
     try {
       const res = await api.get('/policies');
-      setPolicies(res.data);
+      setPolicies(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Failed to load policies', err);
+      setPolicies([]);
     }
   };
 
@@ -87,15 +88,28 @@ export default function PoliciesPage() {
     loadPolicies();
   }, [user]);
 
+  // Safe Date Helpers
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('en-IN');
+  };
+
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d.toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
   // Edit Policy Details
   const handleOpenEdit = (policy) => {
     setEditingPolicy(policy);
     setEditForm({
-      title: policy.title || '',
-      coverage_amount: policy.coverage_amount || '',
-      premium: policy.premium || '',
-      status: policy.status || 'ACTIVE',
-      end_date: policy.end_date ? policy.end_date.split('T')[0] : ''
+      title: policy?.title || '',
+      coverage_amount: policy?.coverage_amount || '',
+      premium: policy?.premium || '',
+      status: policy?.status || 'ACTIVE',
+      end_date: policy?.end_date ? String(policy.end_date).split('T')[0] : ''
     });
     setOpenEditModal(true);
   };
@@ -147,16 +161,18 @@ export default function PoliciesPage() {
   };
 
   // Multi-criteria Filtering
-  const filteredPolicies = policies.filter(p => {
+  const safePolicies = Array.isArray(policies) ? policies : [];
+  const filteredPolicies = safePolicies.filter(p => {
+    if (!p) return false;
     // 1. Text Search
     const matchesSearch =
-      p.policy_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.customer?.full_name?.toLowerCase().includes(searchQuery.toLowerCase());
+      (p.policy_number || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.customer?.full_name || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     // 2. Category Filter
     const matchesCategory =
-      categoryFilter === 'ALL' || p.type?.toUpperCase() === categoryFilter.toUpperCase();
+      categoryFilter === 'ALL' || (p.type || '').toUpperCase() === categoryFilter.toUpperCase();
 
     // 3. Status Filter
     const matchesStatus =
@@ -164,11 +180,11 @@ export default function PoliciesPage() {
 
     // 4. Start Date Range Filter
     const matchesStartDate =
-      !startDateFilter || new Date(p.start_date) >= new Date(startDateFilter);
+      !startDateFilter || (p.start_date && new Date(p.start_date) >= new Date(startDateFilter));
 
     // 5. End Date Range Filter
     const matchesEndDate =
-      !endDateFilter || new Date(p.end_date) <= new Date(endDateFilter);
+      !endDateFilter || (p.end_date && new Date(p.end_date) <= new Date(endDateFilter));
 
     return matchesSearch && matchesCategory && matchesStatus && matchesStartDate && matchesEndDate;
   });
@@ -180,7 +196,7 @@ export default function PoliciesPage() {
       EXPIRED: { label: 'EXPIRED', color: 'error' },
       CANCELLED: { label: 'CANCELLED', color: 'default' },
     };
-    const s = map[status] || { label: status, color: 'default' };
+    const s = map[status] || { label: status || 'UNKNOWN', color: 'default' };
     return <Chip label={s.label} color={s.color} size="small" sx={{ fontWeight: 800, borderRadius: 1.5 }} />;
   };
 
@@ -361,15 +377,15 @@ export default function PoliciesPage() {
                   </TableCell>
                   <TableCell sx={{ fontWeight: 700 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
                   <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
-                    {new Date(p.start_date).toLocaleDateString('en-IN')} - {new Date(p.end_date).toLocaleDateString('en-IN')}
+                    {formatDate(p.start_date)} - {formatDate(p.end_date)}
                   </TableCell>
                   <TableCell>
                     {getStatusChip(p.status)}
                   </TableCell>
                   <TableCell sx={{ fontSize: '0.8rem' }}>
-                    {p.last_reminder_sent ? (
+                    {formatDateTime(p.last_reminder_sent) ? (
                       <Chip
-                        label={new Date(p.last_reminder_sent).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        label={formatDateTime(p.last_reminder_sent)}
                         size="small"
                         color="info"
                         variant="outlined"

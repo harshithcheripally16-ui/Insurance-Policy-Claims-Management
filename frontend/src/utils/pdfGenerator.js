@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import { formatCurrency, formatDate } from './formatters';
 
 export const generatePolicyPDF = (policy) => {
   const doc = new jsPDF({
@@ -42,7 +41,7 @@ export const generatePolicyPDF = (policy) => {
   doc.setTextColor(...grayColor);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Issued on: ${formatDate(new Date())}`, pageWidth - 14, y, { align: 'right' });
+  doc.text(`Issued on: ${new Date().toLocaleDateString('en-IN')}`, pageWidth - 14, y, { align: 'right' });
 
   y += 10;
 
@@ -76,7 +75,7 @@ export const generatePolicyPDF = (policy) => {
   doc.text(`Policy Status: `, 115, y + 28);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(policy.status === 'ACTIVE' ? 0 : 200, policy.status === 'ACTIVE' ? 168 : 50, policy.status === 'ACTIVE' ? 150 : 0);
-  doc.text(`${policy.status || 'ACTIVE'}`, 142, y + 28);
+  doc.text(`${policy.status}`, 142, y + 28);
 
   y += 48;
 
@@ -93,13 +92,13 @@ export const generatePolicyPDF = (policy) => {
   y += 8;
 
   const rows = [
-    ['Policy Number', policy.policy_number || 'N/A'],
-    ['Insurance Plan Title', policy.title || 'N/A'],
-    ['Plan Category / Type', policy.type || 'N/A'],
-    ['Coverage Limit (Maximum)', `Rs. ${formatCurrency(policy.coverage_amount)}`],
-    ['Annual Premium Collected', `Rs. ${formatCurrency(policy.premium)}`],
-    ['Effective Start Date', formatDate(policy.start_date)],
-    ['Expiration Term Date', formatDate(policy.end_date)],
+    ['Policy Number', policy.policy_number],
+    ['Insurance Plan Title', policy.title],
+    ['Plan Category / Type', policy.type],
+    ['Coverage Limit (Maximum)', `Rs. ${policy.coverage_amount?.toLocaleString('en-IN')}`],
+    ['Annual Premium Collected', `Rs. ${policy.premium?.toLocaleString('en-IN')}`],
+    ['Effective Start Date', new Date(policy.start_date).toLocaleDateString('en-IN')],
+    ['Expiration Term Date', new Date(policy.end_date).toLocaleDateString('en-IN')],
   ];
 
   rows.forEach((row, i) => {

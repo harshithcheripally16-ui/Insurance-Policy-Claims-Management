@@ -16,7 +16,6 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cart
 import StatCard from '../components/StatCard';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { formatCurrency } from '../utils/formatters';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -162,7 +161,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             title="Total Premiums"
-            value={`₹${formatCurrency(stats?.total_premium_collected)}`}
+            value={`₹${stats.total_premium_collected.toLocaleString('en-IN')}`}
             icon={<AccountBalanceWalletIcon />}
             color="#0284c7"
             subtitle="Annual Premium Value"
@@ -203,7 +202,7 @@ export default function Dashboard() {
               <YAxis yAxisId="left" orientation="left" stroke="#ff5a00" tickFormatter={(v) => `₹${(v/1000).toFixed(0)}k`} />
               <YAxis yAxisId="right" orientation="right" stroke="#002970" allowDecimals={false} />
               <Tooltip
-                formatter={(value, name) => name === 'revenue' ? [`₹${formatCurrency(value)}`, 'Premium Revenue'] : [value, 'Policies Issued']}
+                formatter={(value, name) => name === 'revenue' ? [`₹${value.toLocaleString('en-IN')}`, 'Premium Revenue'] : [value, 'Policies Issued']}
                 contentStyle={{ borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)', border: 'none' }}
               />
               <Legend wrapperStyle={{ paddingTop: 10, fontWeight: 700 }} />
@@ -255,10 +254,10 @@ export default function Dashboard() {
                       </Typography>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1.5, pt: 1.2, borderTop: '1px dashed', borderColor: 'divider' }}>
                         <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 800 }}>
-                          Coverage: ₹{formatCurrency(p.coverage_amount)}
+                          Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                         </Typography>
                         <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
-                          Premium: ₹{formatCurrency(p.premium)}/year
+                          Premium: ₹{p.premium?.toLocaleString('en-IN')}/year
                         </Typography>
                       </Box>
                     </CardContent>

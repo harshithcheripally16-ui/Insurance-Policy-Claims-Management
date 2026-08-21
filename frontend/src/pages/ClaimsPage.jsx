@@ -10,7 +10,6 @@ import ClaimRiskChip from '../components/ClaimRiskChip';
 import DocumentViewerDialog from '../components/DocumentViewerDialog';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../utils/formatters';
 
 export default function ClaimsPage() {
   const { user } = useAuth();
@@ -151,7 +150,7 @@ export default function ClaimsPage() {
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ fontWeight: 800, color: 'text.primary' }}>
-                    ₹{formatCurrency(c.amount)}
+                    ₹{c.amount?.toLocaleString('en-IN')}
                   </TableCell>
                   <TableCell>
                     <ClaimRiskChip score={c.risk_score} level={c.risk_level} flags={c.fraud_flags} />
@@ -194,7 +193,7 @@ export default function ClaimsPage() {
             >
               {safePolicies.map((p) => (
                 <MenuItem key={p.id} value={p.id}>
-                  {p.title} ({p.policy_number}) - Max Coverage: ₹{formatCurrency(p.coverage_amount)}
+                  {p.title} ({p.policy_number}) - Max Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                 </MenuItem>
               ))}
             </TextField>

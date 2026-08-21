@@ -13,7 +13,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../utils/formatters';
 
 export default function InsurancePlansPage() {
   const { user } = useAuth();
@@ -183,10 +182,10 @@ export default function InsurancePlansPage() {
                       Maximum Coverage Limit
                     </Typography>
                     <Typography variant="h4" sx={{ fontWeight: 900, color: '#00a896', my: 0.5, letterSpacing: '-0.02em' }}>
-                      ₹{formatCurrency(item.max_coverage)}
+                      ₹{item.max_coverage?.toLocaleString('en-IN')}
                     </Typography>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'secondary.main' }}>
-                      ₹{formatCurrency(item.base_premium)} <Typography component="span" variant="caption" color="text.secondary">/ year ({item.term_months} months term)</Typography>
+                      ₹{item.base_premium?.toLocaleString('en-IN')} <Typography component="span" variant="caption" color="text.secondary">/ year ({item.term_months} months term)</Typography>
                     </Typography>
                   </Box>
 
@@ -239,7 +238,7 @@ export default function InsurancePlansPage() {
               <Box sx={{ pt: 1.5, borderTop: '1px dashed', borderColor: 'divider', display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="caption" sx={{ fontWeight: 800, color: 'text.secondary' }}>Annual Premium:</Typography>
                 <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#00a896' }}>
-                  ₹{formatCurrency(selectedCatalog.base_premium)}
+                  ₹{selectedCatalog.base_premium?.toLocaleString('en-IN')}
                 </Typography>
               </Box>
             </Box>

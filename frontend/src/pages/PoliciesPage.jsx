@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { generatePolicyPDF } from '../utils/pdfGenerator';
+import { formatCurrency, formatDate, formatDateTime } from '../utils/formatters';
 
 export default function PoliciesPage() {
   const { user } = useAuth();
@@ -373,9 +374,9 @@ export default function PoliciesPage() {
                     {p.customer?.full_name?.replace(/\s*\([^)]*\)/, '') || 'Customer'}
                   </TableCell>
                   <TableCell sx={{ fontWeight: 800, color: 'success.main' }}>
-                    ₹{p.coverage_amount?.toLocaleString('en-IN')}
+                    ₹{formatCurrency(p.coverage_amount)}
                   </TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>₹{p.premium?.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>₹{formatCurrency(p.premium)}</TableCell>
                   <TableCell sx={{ color: 'text.secondary', fontSize: '0.82rem' }}>
                     {formatDate(p.start_date)} - {formatDate(p.end_date)}
                   </TableCell>

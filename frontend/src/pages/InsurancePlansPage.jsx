@@ -33,13 +33,17 @@ export default function InsurancePlansPage() {
         api.get('/policy-catalog'),
         api.get('/users?role=CUSTOMER')
       ]);
-      setCatalog(resCat.data);
-      setCustomers(resCust.data);
-      if (resCust.data.length > 0) {
-        setTargetCustomerId(resCust.data[0].id);
+      const catList = Array.isArray(resCat.data) ? resCat.data : [];
+      const custList = Array.isArray(resCust.data) ? resCust.data : [];
+      setCatalog(catList);
+      setCustomers(custList);
+      if (custList.length > 0) {
+        setTargetCustomerId(custList[0].id);
       }
     } catch (err) {
       console.error(err);
+      setCatalog([]);
+      setCustomers([]);
     }
   };
 
@@ -71,10 +75,13 @@ export default function InsurancePlansPage() {
     'Tax Benefits under Section 80D / 80C'
   ];
 
-  const filteredCatalog = catalog.filter(c =>
-    c.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.type?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const safeCatalog = Array.isArray(catalog) ? catalog : [];
+  const filteredCatalog = safeCatalog.filter(c =>
+    c && (
+      (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.type || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+    )
   );
 
   return (

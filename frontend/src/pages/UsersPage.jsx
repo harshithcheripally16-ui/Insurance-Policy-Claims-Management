@@ -18,14 +18,22 @@ export default function UsersPage() {
   });
   const [msg, setMsg] = useState('');
 
+  const formatDate = (dateStr) => {
+    if (!dateStr) return 'N/A';
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('en-IN');
+  };
+
   const loadUsers = async () => {
     try {
       // Query strictly records where role is CUSTOMER
       const res = await api.get('/users?role=CUSTOMER');
-      const sortedUsers = [...res.data].sort((a, b) => a.id - b.id);
+      const rawData = Array.isArray(res.data) ? res.data : [];
+      const sortedUsers = [...rawData].sort((a, b) => (a.id || 0) - (b.id || 0));
       setUsersList(sortedUsers);
     } catch (err) {
       console.error('Failed to load customers', err);
+      setUsersList([]);
     }
   };
 
@@ -109,7 +117,7 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{u.phone || 'N/A'}</TableCell>
                   <TableCell sx={{ color: 'text.secondary', fontSize: '0.84rem' }}>
-                    {new Date(u.created_at).toLocaleDateString('en-IN')}
+                    {formatDate(u.created_at)}
                   </TableCell>
                 </TableRow>
               ))

@@ -28,10 +28,12 @@ export default function ClaimsPage() {
         api.get(url),
         api.get('/policies')
       ]);
-      setClaims(resClaims.data);
-      setPolicies(resPol.data);
+      setClaims(Array.isArray(resClaims.data) ? resClaims.data : []);
+      setPolicies(Array.isArray(resPol.data) ? resPol.data : []);
     } catch (err) {
       console.error(err);
+      setClaims([]);
+      setPolicies([]);
     }
   };
 
@@ -130,14 +132,14 @@ export default function ClaimsPage() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {claims.length === 0 ? (
+            {safeClaims.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <Typography variant="body2" color="text.secondary">No claim requests submitted yet.</Typography>
                 </TableCell>
               </TableRow>
             ) : (
-              claims.map((c) => (
+              safeClaims.map((c) => (
                 <TableRow key={c.id} hover sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
                   <TableCell sx={{ fontWeight: 800, color: 'primary.main' }}>{c.claim_number}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{c.policy?.policy_number || 'N/A'}</TableCell>
@@ -189,7 +191,7 @@ export default function ClaimsPage() {
               margin="normal"
               required
             >
-              {policies.map((p) => (
+              {safePolicies.map((p) => (
                 <MenuItem key={p.id} value={p.id}>
                   {p.title} ({p.policy_number}) - Max Coverage: ₹{p.coverage_amount?.toLocaleString('en-IN')}
                 </MenuItem>

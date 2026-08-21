@@ -12,6 +12,7 @@ from app.schemas import (
 from app.dependencies import get_current_user, require_roles
 from app.services.notification import create_notification
 from app.services.smtp_service import send_policy_reminder_email
+from app.services.sms_service import send_phone_sms_reminder
 
 router = APIRouter(prefix="/api", tags=["Policies"])
 
@@ -222,4 +223,50 @@ def send_policy_reminder(
     )
 
     return policy
+
+@router.post("/policies/{id}/send-sms-reminder", response_model=PolicyResponse)
+def send_policy_sms_reminder(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles([UserRole.AGENT, UserRole.ADMIN]))
+):
+    policy = db.query(Policy).filter(Policy.id == id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    customer = policy.customer
+    if not customer:
+        raise HTTPException(status_code=400, detail="Policy has no assigned customer profile")
+
+    end_date_str = policy.end_date.strftime("%d %b %Y") if policy.end_date else "N/A"
+    cust_name = customer.full_name.split("(")[0].strip() if customer.full_name else "Valued Customer"
+    phone = customer.phone or "+91 98765 43210"
+
+    # Send Phone SMS Text
+    send_phone_sms_reminder(
+        to_phone=phone,
+        customer_name=cust_name,
+        policy_number=policy.policy_number,
+        title=policy.title,
+        coverage_amount=policy.coverage_amount,
+        premium=policy.premium,
+        end_date_str=end_date_str
+    )
+
+    # Update timestamp
+    policy.last_reminder_sent = datetime.now()
+    db.commit()
+    db.refresh(policy)
+
+    # In-App Notification
+    create_notification(
+        db=db,
+        user_id=customer.id,
+        title="SMS Policy Renewal Notice",
+        message=f"SMS renewal notice sent to your mobile phone for policy {policy.policy_number} ({policy.title}). Expiration date: {end_date_str}.",
+        notification_type="POLICY"
+    )
+
+    return policy
+
 

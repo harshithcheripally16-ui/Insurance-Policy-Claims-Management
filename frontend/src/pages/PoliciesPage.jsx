@@ -11,6 +11,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AddIcon from '@mui/icons-material/Add';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import EmailIcon from '@mui/icons-material/Email';
+import SmsIcon from '@mui/icons-material/Sms';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useNavigate } from 'react-router-dom';
@@ -37,8 +38,9 @@ export default function PoliciesPage() {
 
   // DELETE Policy Modal State
   const [openDeleteModal, setOpenDeleteModal] = useState(false);
-  // SEND REMINDER Email State
+  // SEND REMINDER Email & SMS State
   const [sendingReminderId, setSendingReminderId] = useState(null);
+  const [sendingSmsId, setSendingSmsId] = useState(null);
 
   const [msg, setMsg] = useState({ type: '', text: '' });
 
@@ -54,6 +56,21 @@ export default function PoliciesPage() {
       setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to send policy reminder email' });
     } finally {
       setSendingReminderId(null);
+    }
+  };
+
+  const handleSendSmsReminder = async (policy) => {
+    setSendingSmsId(policy.id);
+    setMsg({ type: '', text: '' });
+    try {
+      await api.post(`/policies/${policy.id}/send-sms-reminder`);
+      const custPhone = policy.customer?.phone || '+91 98765 43210';
+      setMsg({ type: 'success', text: `Phone SMS renewal reminder successfully delivered to ${custPhone}!` });
+      loadPolicies();
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to send phone SMS reminder' });
+    } finally {
+      setSendingSmsId(null);
     }
   };
 
@@ -375,6 +392,18 @@ export default function PoliciesPage() {
                           onClick={() => handleSendReminder(p)}
                         >
                           {sendingReminderId === p.id ? <CircularProgress size={18} color="inherit" /> : <EmailIcon fontSize="small" />}
+                        </IconButton>
+                      </Tooltip>
+
+                      {/* Send Phone SMS Reminder Button */}
+                      <Tooltip title="Send Phone SMS Renewal Reminder">
+                        <IconButton
+                          size="small"
+                          disabled={sendingSmsId === p.id}
+                          sx={{ color: '#0284c7', '&:hover': { bgcolor: 'rgba(2, 132, 199, 0.1)' } }}
+                          onClick={() => handleSendSmsReminder(p)}
+                        >
+                          {sendingSmsId === p.id ? <CircularProgress size={18} color="inherit" /> : <SmsIcon fontSize="small" />}
                         </IconButton>
                       </Tooltip>
 

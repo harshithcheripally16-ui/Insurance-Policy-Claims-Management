@@ -12,6 +12,8 @@ import InsurancePlansPage from './pages/InsurancePlansPage';
 import ClaimsPage from './pages/ClaimsPage';
 import UsersPage from './pages/UsersPage';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function ProtectedLayout() {
   const { user, loading } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -46,14 +48,16 @@ function ProtectedLayout() {
       <Box sx={{ display: 'flex', flexGrow: 1, overflowX: 'hidden' }}>
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
         <Container maxWidth="xl" sx={{ mt: { xs: 2, sm: 3 }, mb: 4, flexGrow: 1, px: { xs: 1.5, sm: 3 } }}>
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/policies/catalog" element={<InsurancePlansPage />} />
-            <Route path="/policies" element={<PoliciesPage />} />
-            <Route path="/claims" element={<ClaimsPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/policies/catalog" element={<InsurancePlansPage />} />
+              <Route path="/policies" element={<PoliciesPage />} />
+              <Route path="/claims" element={<ClaimsPage />} />
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </ErrorBoundary>
         </Container>
       </Box>
     </Box>

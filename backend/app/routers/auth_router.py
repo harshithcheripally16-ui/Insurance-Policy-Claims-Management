@@ -8,7 +8,8 @@ from pydantic import BaseModel, EmailStr
 from app.database import get_db
 from app.models import User, UserRole, OTPRecord
 from app.schemas import (
-    UserCreate, UserOut, Token, SendOTPRequest, VerifyOTPRequest, PasswordResetRequest
+    UserCreate, UserOut, Token, SendOTPRequest, VerifyOTPRequest, PasswordResetRequest,
+    ProfilePictureUpdate
 )
 from app.dependencies import (
     verify_password, get_password_hash, create_access_token, get_current_user
@@ -121,6 +122,17 @@ def reset_password(req: PasswordResetRequest, db: Session = Depends(get_db)):
     user.hashed_password = get_password_hash(req.new_password)
     db.commit()
     return {"message": "Password updated successfully"}
+
+@router.put("/profile-picture", response_model=UserOut)
+def update_profile_picture(
+    req: ProfilePictureUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    current_user.avatar_url = req.avatar_url
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):

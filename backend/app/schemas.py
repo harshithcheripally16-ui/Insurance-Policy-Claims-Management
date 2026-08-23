@@ -18,11 +18,15 @@ class UserBase(BaseModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None
+    avatar_url: Optional[str] = None
     role: UserRole = UserRole.CUSTOMER
 
 class UserCreate(UserBase):
     password: str
     otp: Optional[str] = None
+
+class ProfilePictureUpdate(BaseModel):
+    avatar_url: str
 
 class UserOut(UserBase):
     id: int

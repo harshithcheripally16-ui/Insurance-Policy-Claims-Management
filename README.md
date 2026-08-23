@@ -1,6 +1,6 @@
 # Policybazaar-Inspired Insurance Policy & Claims Management System
 
-A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by Policybazaar (~70% visual identity & UX match) with a dedicated **Insurance Agent Portal** designed for Agent Priya Nair.
+A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by Policybazaar (~70% visual identity & UX match), developed as a **Group Project by Team Antigravity**.
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Backend-FastAPI-009688.svg)
@@ -9,31 +9,49 @@ A production-ready, full-stack **Insurance Policy & Claims Management System** i
 
 ---
 
-## 🌟 Key Features
+## 👥 Group Project & Team Collaboration Architecture
+
+This repository forms the core foundation of a multi-module enterprise insurance suite built by **Team Antigravity**. The application architecture has been decoupled to guarantee **zero integration barriers and zero module conflicts** when incorporating modules developed by fellow team members.
+
+### 🧩 Teammate Module Integration Support
+Our modular router, role-guard, and component layout structure seamlessly supports plug-and-play integration for the following teammate modules:
+
+1. **Admin Module**: Dedicated administrative control panel, global system settings, agent onboarding, and audit log monitoring.
+2. **Customer Module**: Self-service client portal for direct policy browsing, payment gateway checkouts, document uploads, and policy management.
+3. **Claims Officer Module**: Specialized adjudication dashboard for insurance claims adjusters, investigation management, and payout approvals.
+
+Each teammate module can be connected directly via independent API routers and React route boundaries without affecting existing agent portal workflows or causing merge conflicts.
+
+---
+
+## 🌟 Key System Capabilities
 
 ### 🏢 Policybazaar Visual System Identity (~70% Match)
 - **Brand Palette**: Signature Vibrant Orange (`#ff5a00`), Corporate Navy (`#002970`), Coverage Accent Teal (`#00a896`), and Soft Ice Blue background gradient (`#edf5ff`).
-- **Glassmorphic Navigation**: Top glassmorphic header bar with a hamburger toggle button placed immediately to the left of the brand logo, launching an animated sliding Drawer navigation menu.
-- **Plain Insurance Terminology**: Avoids technical developer jargon; uses clear terms like *Insurance Plans*, *Policy Coverages*, and *Client Accounts*.
+- **Glassmorphic Navigation**: Top glassmorphic header bar with a hamburger toggle button positioned immediately to the left of the brand logo, launching an animated sliding Drawer navigation menu.
+- **Plain Insurance Terminology**: Avoids developer jargon; uses clear terms like *Insurance Plans*, *Policy Coverages*, and *Client Accounts*.
 
-### 📊 Agent Dashboard (`/dashboard`)
-- **Hero Welcome Banner**: Personalized dashboard for Agent Priya Nair (Verified Agent).
+### 📸 Agent Profile Picture Management
+- **Instagram-Style Profile Upload**: Interactive profile picture editing interface inside the Agent Profile modal, featuring a camera overlay button that allows agents to update their display image in real time.
+
+### 📊 Agent Operations & Dashboard (`/dashboard`)
+- **Hero Welcome Banner**: Personalized operations overview for Agent Priya Nair (Verified Insurance Agent).
 - **KPI Stat Cards**: Total Client Policies, Active Policies, Total Premiums Collected (₹), Client Accounts.
 - **Category Sales Performance Chart**: Interactive dual-axis **Recharts** visualization tracking premium revenues collected (₹) and policies issued across *Health*, *Auto*, *Life*, and *Home*.
 
 ### 📜 Insurance Plans Catalog (`/policies/catalog`)
 - Dedicated catalog grid featuring **BESTSELLER** badges, pricing cards, coverage limit badges, and feature checklists.
-- **Issue Policy to Customer Modal**: Select customer dropdown displaying **ONLY Customer Full Names** (strictly hiding email addresses for agent focus).
+- **Issue Policy to Customer Modal**: Customer select dropdown displaying **ONLY Customer Full Names** (strictly hiding email addresses for agent privacy and focus).
 
 ### 📑 Customer Policies Portfolio (`/policies`)
-- Table of active customer policy coverages with status chips (`ACTIVE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`).
+- Active customer policy coverages table with status chips (`ACTIVE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`).
 - **Advanced Multi-Filter Bar**: Search Query (Policy #, Title, Customer), Category, Status, Valid Dates (*Valid From* / *Valid Until*), and Reset.
 - **1-Click SMTP Email Renewal Reminder**: Sends branded HTML renewal email + updates "Last Reminder Sent" audit timestamp + in-app notice.
 - **1-Click Phone SMS Renewal Reminder**: Sends SMS renewal notice + updates "Last Reminder Sent" audit timestamp + in-app notice.
 - **1-Click PDF Policy Guarantee Certificate**: Downloads official A4 Policy Guarantee Certificate PDF with digital agent seal.
 
 ### 👥 Customer Directory (`/users`)
-- Filtered directory of verified client accounts (`role = CUSTOMER`).
+- Verified client accounts directory (`role = CUSTOMER`).
 - **Sequential Auto-Reindexed ID Column**: Customer display IDs renumbered dynamically starting from 1 (`1, 2, 3, ...`) with zero gaps.
 
 ### ⚠️ Claims Desk & Risk Engine (`/claims`)
@@ -42,78 +60,17 @@ A production-ready, full-stack **Insurance Policy & Claims Management System** i
 
 ---
 
-## 📁 Repository Structure
+## ⚡ Local Execution Instructions
 
-```
-insurance-policy-claims-management/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                    # FastAPI app instance, CORS & router registrations
-│   │   ├── config.py                  # Environment config (JWT secret, SMTP settings)
-│   │   ├── database.py                # SQLAlchemy engine & get_db dependency
-│   │   ├── models.py                  # SQLAlchemy Models & Enums
-│   │   ├── schemas.py                 # Pydantic v2 validation models & response schemas
-│   │   ├── dependencies.py           # JWT auth dependencies & role guards
-│   │   ├── routers/
-│   │   │   ├── auth_router.py         # Login, Register, OTP verification, Password Reset
-│   │   │   ├── policies_router.py     # Policy catalog, Purchase, Reminders
-│   │   │   ├── users_router.py        # Customer directory query & User CRUD
-│   │   │   ├── claims_router.py       # Claim filing & document attachments
-│   │   │   ├── analytics_router.py    # Dashboard KPI stats & sales aggregation
-│   │   │   └── notifications_router.py# In-app notifications
-│   │   └── services/
-│   │       ├── smtp_service.py        # HTML OTP email & Policy Renewal Email dispatch
-│   │       ├── sms_service.py         # Phone SMS Renewal Reminder dispatch
-│   │       ├── notification.py       # In-app DB notification helper
-│   │       └── risk_engine.py         # Claim risk assessment engine
-│   ├── tests/
-│   │   └── test_api.py                # Automated Pytest API test suite
-│   ├── run.py                         # FastAPI runner script (port 8000)
-│   └── requirements.txt
-│
-└── frontend/
-    ├── src/
-    │   ├── App.jsx                    # App routes, ProtectedLayout, ErrorBoundary wrapper
-    │   ├── main.jsx                   # Vite entry point
-    │   ├── theme.js                   # Policybazaar Material UI theme
-    │   ├── context/
-    │   │   └── AuthContext.jsx        # Auth state provider
-    │   ├── services/
-    │   │   └── api.js                 # Axios instance with JWT interceptor
-    │   ├── utils/
-    │   │   └── pdfGenerator.js        # jsPDF A4 Policy Certificate generator
-    │   ├── components/
-    │   │   ├── Navbar.jsx             # Top glassmorphic bar + Hamburger button
-    │   │   ├── Sidebar.jsx            # Animated sliding Drawer navigation menu
-    │   │   ├── StatCard.jsx           # Policybazaar KPI stat card
-    │   │   └── ErrorBoundary.jsx      # React ErrorBoundary component
-    │   └── pages/
-    │       ├── Login.jsx              # Sign-in & 3-step Forgot Password OTP modal
-    │       ├── Register.jsx           # Sign-up & Email OTP verification modal
-    │       ├── Dashboard.jsx          # Agent Dashboard & Recharts Performance Chart
-    │       ├── InsurancePlansPage.jsx # Dedicated Insurance Plans Catalog (/policies/catalog)
-    │       ├── PoliciesPage.jsx       # Customer Policies (/policies) + Reminders
-    │       ├── UsersPage.jsx          # Customer Directory (/users) + Gapless Reindexing
-    │       └── ClaimsPage.jsx         # Claims filing & risk viewer
-    ├── package.json
-    └── vite.config.js
-```
-
----
-
-## ⚡ Quick Start & Local Execution
-
-### 1. Backend Setup (Port 8000)
+### 1. Backend Server Setup (Port 8000)
 ```bash
-cd backend
 python -m pip install -r requirements.txt
 python run.py
 ```
 > API interactive documentation available at: `http://127.0.0.1:8000/docs`
 
-### 2. Frontend Setup (Port 3000)
+### 2. Frontend Server Setup (Port 3000)
 ```bash
-cd frontend
 npm install
 npm run dev
 ```
@@ -129,10 +86,9 @@ npm run dev
 
 ---
 
-## 🧪 Running Automated Tests
+## 🧪 Automated Testing
 
 ```bash
-cd backend
 python -m pytest
 ```
 
@@ -140,4 +96,4 @@ python -m pytest
 
 ## 📜 License
 
-Distributed under the MIT License. See `LICENSE` for details.
+Distributed under the MIT License. Developed by **Team Antigravity**.

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar, Toolbar, Typography, IconButton, Badge, Box, Avatar, Menu,
   MenuItem, Drawer, List, ListItem, ListItemText, ListItemIcon, Divider,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Chip
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Chip, CircularProgress
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -13,16 +13,18 @@ import SecurityIcon from '@mui/icons-material/Security';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import CloseIcon from '@mui/icons-material/Close';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 
 const Navbar = ({ onToggleSidebar }) => {
-  const { user, logoutUser } = useContext(AuthContext);
+  const { user, logoutUser, updateUser } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [notifDrawerOpen, setNotifDrawerOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchNotifications = async () => {
     try {
@@ -50,6 +52,33 @@ const Navbar = ({ onToggleSidebar }) => {
     } catch (e) {
       console.error("Failed to mark read:", e);
     }
+  };
+
+  // Instagram-style Profile Picture Upload Handler
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file.');
+      return;
+    }
+
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64Image = reader.result;
+      try {
+        const res = await api.put('/auth/profile-picture', { avatar_url: base64Image });
+        updateUser({ avatar_url: res.data.avatar_url });
+      } catch (err) {
+        console.error('Failed to update profile picture:', err);
+        alert('Failed to update profile picture. Please try again.');
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -147,6 +176,7 @@ const Navbar = ({ onToggleSidebar }) => {
               }}
             >
               <Avatar
+                src={user?.avatar_url || ''}
                 sx={{
                   bgcolor: '#002970',
                   width: 34,
@@ -249,26 +279,63 @@ const Navbar = ({ onToggleSidebar }) => {
         </List>
       </Drawer>
 
-      {/* Agent Profile Modal */}
+      {/* Agent Profile Modal with Instagram-Style Profile Picture Edit */}
       <Dialog open={profileModalOpen} onClose={() => setProfileModalOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#002970', borderBottom: '1px solid #eee' }}>
           Agent Profile Details
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Avatar
-              sx={{
-                width: 70,
-                height: 70,
-                bgcolor: '#002970',
-                fontSize: '2rem',
-                margin: '0 auto',
-                mb: 1,
-                boxShadow: '0 4px 12px rgba(0,41,112,0.2)'
-              }}
-            >
-              {user?.name ? user.name[0] : 'P'}
-            </Avatar>
+          <Box sx={{ textAlign: 'center', mb: 3, position: 'relative' }}>
+            {/* Instagram-style Avatar with Camera Overlay Edit Button */}
+            <Box sx={{ position: 'relative', display: 'inline-block', margin: '0 auto', mb: 1 }}>
+              <Avatar
+                src={user?.avatar_url || ''}
+                sx={{
+                  width: 84,
+                  height: 84,
+                  bgcolor: '#002970',
+                  fontSize: '2.4rem',
+                  fontWeight: 700,
+                  boxShadow: '0 4px 16px rgba(0,41,112,0.2)',
+                  border: '3px solid #ffffff',
+                }}
+              >
+                {user?.name ? user.name[0] : 'P'}
+              </Avatar>
+
+              <IconButton
+                component="label"
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: -4,
+                  bgcolor: '#ff5a00',
+                  color: '#ffffff',
+                  border: '2px solid #ffffff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+                  '&:hover': { bgcolor: '#d94b00' },
+                  width: 32,
+                  height: 32,
+                }}
+              >
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+                {uploadingImage ? (
+                  <CircularProgress size={16} color="inherit" />
+                ) : (
+                  <PhotoCameraIcon sx={{ fontSize: 17 }} />
+                )}
+              </IconButton>
+            </Box>
+
+            <Typography variant="caption" sx={{ display: 'block', color: '#ff5a00', fontWeight: 600, mb: 1 }}>
+              Click camera icon to change display picture
+            </Typography>
+
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#002970' }}>
               {user?.name || 'Priya Nair'}
             </Typography>

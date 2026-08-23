@@ -1,4 +1,4 @@
-# InsurCare-Inspired Insurance Policy & Claims Management System
+# InsurCare- Insurance Policy & Claims Management System
 
 A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by InsurCare (~70% visual identity & UX match), developed as a **Group Project by Team Antigravity**.
 

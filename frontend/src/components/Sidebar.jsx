@@ -58,7 +58,7 @@ const Sidebar = ({ open, onClose }) => {
           <SecurityIcon />
         </Box>
         <Typography variant="h6" sx={{ fontWeight: 800, color: '#fff', fontSize: '1.2rem' }}>
-          insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
+          Insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
         </Typography>
       </Box>
 

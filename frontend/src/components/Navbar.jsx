@@ -170,7 +170,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   fontSize: { xs: '1.1rem', sm: '1.25rem' }
                 }}
               >
-                insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
+                Insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
               </Typography>
             </Box>
 

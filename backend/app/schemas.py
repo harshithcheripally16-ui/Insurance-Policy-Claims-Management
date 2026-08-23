@@ -28,6 +28,12 @@ class UserCreate(UserBase):
 class ProfilePictureUpdate(BaseModel):
     avatar_url: str
 
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+
 class UserOut(UserBase):
     id: int
     created_at: datetime

@@ -2,7 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import {
   AppBar, Toolbar, Typography, IconButton, Badge, Box, Avatar, Menu,
   MenuItem, Drawer, List, ListItem, ListItemText, ListItemIcon, Divider,
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, Chip, CircularProgress
+  Dialog, DialogTitle, DialogContent, DialogActions, Button, Chip, CircularProgress,
+  TextField, Alert
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
@@ -14,6 +15,8 @@ import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import CloseIcon from '@mui/icons-material/Close';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
 
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
@@ -25,6 +28,22 @@ const Navbar = ({ onToggleSidebar }) => {
   const [notifications, setNotifications] = useState([]);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Edit profile state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: '', email: '', phone: '' });
+  const [profileMsg, setProfileMsg] = useState({ type: '', text: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({
+        name: user.name || 'Priya Nair',
+        email: user.email || 'agent@insure.com',
+        phone: user.phone || '+91 98765 00001'
+      });
+    }
+  }, [user, profileModalOpen]);
 
   const fetchNotifications = async () => {
     try {
@@ -81,6 +100,26 @@ const Navbar = ({ onToggleSidebar }) => {
     reader.readAsDataURL(file);
   };
 
+  // Profile Details Edit Handler (Name, Email, Phone)
+  const handleSaveProfileDetails = async () => {
+    if (!profileForm.name || !profileForm.email) {
+      setProfileMsg({ type: 'error', text: 'Name and email address are required' });
+      return;
+    }
+    setSavingProfile(true);
+    setProfileMsg({ type: '', text: '' });
+    try {
+      const res = await api.put('/auth/profile', profileForm);
+      updateUser(res.data);
+      setProfileMsg({ type: 'success', text: 'Agent profile details updated successfully!' });
+      setIsEditingProfile(false);
+    } catch (err) {
+      setProfileMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to update profile details' });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   return (
     <>
       <AppBar
@@ -94,7 +133,7 @@ const Navbar = ({ onToggleSidebar }) => {
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          {/* Left Brand section: Hamburger button immediately to the left of brand logo */}
+          {/* Left Brand section */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <IconButton
               edge="start"
@@ -206,7 +245,7 @@ const Navbar = ({ onToggleSidebar }) => {
                 sx: { borderRadius: 3, minWidth: 180, mt: 1 }
               }}
             >
-              <MenuItem onClick={() => { setAnchorEl(null); setProfileModalOpen(true); }}>
+              <MenuItem onClick={() => { setAnchorEl(null); setProfileModalOpen(true); setIsEditingProfile(false); setProfileMsg({ type: '', text: '' }); }}>
                 <ListItemIcon><AccountCircleIcon fontSize="small" sx={{ color: '#002970' }} /></ListItemIcon>
                 Agent Profile
               </MenuItem>
@@ -279,12 +318,28 @@ const Navbar = ({ onToggleSidebar }) => {
         </List>
       </Drawer>
 
-      {/* Agent Profile Modal with Instagram-Style Profile Picture Edit */}
+      {/* Agent Profile Modal with Editable Name, Email, Phone & Picture */}
       <Dialog open={profileModalOpen} onClose={() => setProfileModalOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#002970', borderBottom: '1px solid #eee' }}>
-          Agent Profile Details
+        <DialogTitle sx={{ fontWeight: 700, color: '#002970', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Agent Profile Details</span>
+          {!isEditingProfile && (
+            <Button
+              size="small"
+              startIcon={<EditIcon sx={{ fontSize: 16 }} />}
+              onClick={() => setIsEditingProfile(true)}
+              sx={{ color: '#ff5a00', fontWeight: 700 }}
+            >
+              Edit Details
+            </Button>
+          )}
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
+          {profileMsg.text && (
+            <Alert severity={profileMsg.type || 'info'} sx={{ mb: 2, mt: 1 }}>
+              {profileMsg.text}
+            </Alert>
+          )}
+
           <Box sx={{ textAlign: 'center', mb: 3, position: 'relative' }}>
             {/* Instagram-style Avatar with Camera Overlay Edit Button */}
             <Box sx={{ position: 'relative', display: 'inline-block', margin: '0 auto', mb: 1 }}>
@@ -336,32 +391,100 @@ const Navbar = ({ onToggleSidebar }) => {
               Click camera icon to change display picture
             </Typography>
 
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#002970' }}>
-              {user?.name || 'Priya Nair'}
-            </Typography>
             <Chip
               icon={<VerifiedUserIcon sx={{ fontSize: '14px !important' }} />}
               label="VERIFIED INSURANCE AGENT"
               color="success"
               size="small"
-              sx={{ mt: 1, fontWeight: 700 }}
+              sx={{ mt: 0.5, fontWeight: 700 }}
             />
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <EmailIcon sx={{ color: '#002970' }} />
-              <Typography variant="body2">{user?.email || 'agent@insure.com'}</Typography>
+
+          {/* Form / Readonly View */}
+          {isEditingProfile ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <TextField
+                label="Agent Full Name"
+                size="small"
+                value={profileForm.name}
+                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Email Address"
+                size="small"
+                type="email"
+                value={profileForm.email}
+                onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                required
+                fullWidth
+              />
+              <TextField
+                label="Contact Phone Number"
+                size="small"
+                value={profileForm.phone}
+                onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                placeholder="+91 98765 00001"
+                fullWidth
+              />
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <PhoneIcon sx={{ color: '#002970' }} />
-              <Typography variant="body2">{user?.phone || '+91 98765 00001'}</Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
+              <Box sx={{ textAlign: 'center', mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#002970' }}>
+                  {user?.name || 'Priya Nair'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(0, 41, 112, 0.03)', p: 1.5, borderRadius: 2 }}>
+                <EmailIcon sx={{ color: '#002970' }} />
+                <Box>
+                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', fontWeight: 600 }}>
+                    Email Address
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#002970' }}>
+                    {user?.email || 'agent@insure.com'}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, bgcolor: 'rgba(0, 41, 112, 0.03)', p: 1.5, borderRadius: 2 }}>
+                <PhoneIcon sx={{ color: '#002970' }} />
+                <Box>
+                  <Typography variant="caption" color="textSecondary" sx={{ display: 'block', fontWeight: 600 }}>
+                    Phone Number
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#002970' }}>
+                    {user?.phone || '+91 98765 00001'}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
-          </Box>
+          )}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setProfileModalOpen(false)} variant="contained" color="primary" fullWidth>
-            Close Profile
-          </Button>
+          {isEditingProfile ? (
+            <>
+              <Button onClick={() => setIsEditingProfile(false)} color="inherit">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveProfileDetails}
+                variant="contained"
+                color="secondary"
+                startIcon={savingProfile ? null : <SaveIcon />}
+                disabled={savingProfile}
+                sx={{ fontWeight: 700 }}
+              >
+                {savingProfile ? <CircularProgress size={22} color="inherit" /> : 'Save Changes'}
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => setProfileModalOpen(false)} variant="contained" color="primary" fullWidth>
+              Close Profile
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </>

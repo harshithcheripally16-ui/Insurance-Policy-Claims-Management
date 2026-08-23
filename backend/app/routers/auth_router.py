@@ -9,7 +9,7 @@ from app.database import get_db
 from app.models import User, UserRole, OTPRecord
 from app.schemas import (
     UserCreate, UserOut, Token, SendOTPRequest, VerifyOTPRequest, PasswordResetRequest,
-    ProfilePictureUpdate
+    ProfilePictureUpdate, ProfileUpdate
 )
 from app.dependencies import (
     verify_password, get_password_hash, create_access_token, get_current_user
@@ -130,6 +130,29 @@ def update_profile_picture(
     current_user: User = Depends(get_current_user)
 ):
     current_user.avatar_url = req.avatar_url
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.put("/profile", response_model=UserOut)
+def update_profile(
+    req: ProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if req.email and req.email != current_user.email:
+        existing = db.query(User).filter(User.email == req.email, User.id != current_user.id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email is already registered by another user")
+        current_user.email = req.email
+
+    if req.name is not None:
+        current_user.name = req.name
+    if req.phone is not None:
+        current_user.phone = req.phone
+    if req.avatar_url is not None:
+        current_user.avatar_url = req.avatar_url
+
     db.commit()
     db.refresh(current_user)
     return current_user

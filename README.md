@@ -24,6 +24,36 @@ Each teammate module can be connected directly via independent API routers and R
 
 ---
 
+## 🌿 Team Git Collaboration Workflow (Option 1: Feature Branches)
+
+Our team uses **Direct Collaborators + Dedicated Feature Branches** for developing and integrating individual modules cleanly.
+
+### 1. Clone the Main Repository
+```bash
+git clone https://github.com/harshithcheripally16-ui/Insurance-Policy-Claims-Management.git
+cd Insurance-Policy-Claims-Management
+```
+
+### 2. Create Your Module Feature Branch
+Each teammate creates a separate branch for their module:
+- **Admin Module**: `git checkout -b feature/admin-module`
+- **Customer Module**: `git checkout -b feature/customer-module`
+- **Claims Officer Module**: `git checkout -b feature/claims-officer-module`
+
+### 3. Commit & Push Your Module Branch
+```bash
+git add .
+git commit -m "Add [Module Name] capabilities"
+git push origin feature/[module-name]
+```
+
+### 4. Open a Pull Request (PR)
+- Go to the GitHub repository: `https://github.com/harshithcheripally16-ui/Insurance-Policy-Claims-Management`
+- Click **Compare & Pull Request** to request merging your feature branch into `main`.
+- Once reviewed, click **Merge Pull Request**.
+
+---
+
 ## 🌟 Key System Capabilities
 
 ### 🏢 Policybazaar Visual System Identity (~70% Match)
@@ -31,8 +61,9 @@ Each teammate module can be connected directly via independent API routers and R
 - **Glassmorphic Navigation**: Top glassmorphic header bar with a hamburger toggle button positioned immediately to the left of the brand logo, launching an animated sliding Drawer navigation menu.
 - **Plain Insurance Terminology**: Avoids developer jargon; uses clear terms like *Insurance Plans*, *Policy Coverages*, and *Client Accounts*.
 
-### 📸 Agent Profile Picture Management
+### 📸 Agent Profile & Picture Management
 - **Instagram-Style Profile Upload**: Interactive profile picture editing interface inside the Agent Profile modal, featuring a camera overlay button that allows agents to update their display image in real time.
+- **Editable Profile Details**: In-card editing for Agent Name, Email Address, and Contact Phone Number.
 
 ### 📊 Agent Operations & Dashboard (`/dashboard`)
 - **Hero Welcome Banner**: Personalized operations overview for Agent Priya Nair (Verified Insurance Agent).

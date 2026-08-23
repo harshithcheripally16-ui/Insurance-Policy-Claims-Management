@@ -3,11 +3,12 @@ import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, Button, Dialog, DialogTitle, DialogContent,
   DialogActions, Alert, CircularProgress, Paper, TextField, MenuItem, Select,
-  FormControl, InputLabel
+  FormControl, InputLabel, Tooltip
 } from '@mui/material';
 import AssignmentLateIcon from '@mui/icons-material/AssignmentLate';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import GavelIcon from '@mui/icons-material/Gavel';
 
 import api from '../services/api';
 
@@ -49,15 +50,6 @@ const ClaimsPage = () => {
     fetchClaimsAndPolicies();
   }, []);
 
-  const handleStatusChange = async (claimId, newStatus) => {
-    try {
-      await api.put(`/claims/${claimId}/status`, { status: newStatus });
-      setClaims(prev => prev.map(c => c.id === claimId ? { ...c, status: newStatus } : c));
-    } catch (err) {
-      console.error("Failed to update claim status:", err);
-    }
-  };
-
   const handleFileClaimSubmit = async () => {
     if (!claimForm.policy_id || !claimForm.amount_claimed || !claimForm.description) {
       setFileMsg({ type: 'error', text: 'Please fill all required claim details' });
@@ -69,7 +61,7 @@ const ClaimsPage = () => {
     try {
       const res = await api.post('/claims', {
         policy_id: Number(claimForm.policy_id),
-        incident_date: new Date(claimForm.incident_date).isoformat ? new Date(claimForm.incident_date).toISOString() : claimForm.incident_date,
+        incident_date: new Date(claimForm.incident_date).toISOString ? new Date(claimForm.incident_date).toISOString() : claimForm.incident_date,
         amount_claimed: parseFloat(claimForm.amount_claimed),
         description: claimForm.description,
         document_name: claimForm.document_name
@@ -77,7 +69,7 @@ const ClaimsPage = () => {
 
       setFileMsg({
         type: 'success',
-        text: `Claim #${res.data.claim_number} filed! Automated Risk Score: ${res.data.risk_score}/100`
+        text: `Claim notice #${res.data.claim_number} submitted! Automated Risk Score: ${res.data.risk_score}/100`
       });
 
       setTimeout(() => {
@@ -85,7 +77,7 @@ const ClaimsPage = () => {
         fetchClaimsAndPolicies();
       }, 1500);
     } catch (err) {
-      setFileMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to file claim' });
+      setFileMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to file claim notice' });
     } finally {
       setSubmitting(false);
     }
@@ -107,10 +99,10 @@ const ClaimsPage = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 800, color: '#002970' }}>
-            Claims Desk & Risk Assessment
+            Client Claims Assistance
           </Typography>
           <Typography variant="body1" color="textSecondary" sx={{ mt: 0.5 }}>
-            Process client indemnity claims, review risk scores, and attached document records.
+            Assist clients in submitting claim notices and checking claim status. (Formal adjudication & payout approvals are handled by Claims Officers).
           </Typography>
         </Box>
 
@@ -121,7 +113,7 @@ const ClaimsPage = () => {
           onClick={() => setFileModalOpen(true)}
           sx={{ fontWeight: 700, px: 3, py: 1.2 }}
         >
-          File New Claim
+          Submit Claim Notice
         </Button>
       </Box>
 
@@ -131,28 +123,27 @@ const ClaimsPage = () => {
           <TableHead sx={{ bgcolor: '#002970' }}>
             <TableRow>
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Claim #</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Policy Coverage</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Coverage Title</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Claimant (Customer)</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Amount (₹)</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Risk Score</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Claim Status</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Amount Claimed (₹)</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Automated Risk Score</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Document Record</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Update Status</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 700, textAlign: 'center' }}>Adjudication Status</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                   <CircularProgress color="secondary" />
                 </TableCell>
               </TableRow>
             ) : claims.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="textSecondary">
-                    No claims currently filed.
+                    No claim notices currently submitted.
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -167,34 +158,24 @@ const ClaimsPage = () => {
                   </TableCell>
                   <TableCell>{getRiskChip(claim.risk_score)}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={claim.status}
-                      size="small"
-                      color={
-                        claim.status === 'APPROVED' ? 'success' :
-                        claim.status === 'REJECTED' ? 'error' : 'warning'
-                      }
-                      sx={{ fontWeight: 800 }}
-                    />
-                  </TableCell>
-                  <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: '#00a896', fontSize: '0.85rem', fontWeight: 600 }}>
                       <InsertDriveFileIcon fontSize="small" />
                       {claim.document_name || 'Report.pdf'}
                     </Box>
                   </TableCell>
-                  <TableCell>
-                    <Select
-                      size="small"
-                      value={claim.status}
-                      onChange={(e) => handleStatusChange(claim.id, e.target.value)}
-                      sx={{ fontSize: '0.82rem', fontWeight: 700, height: 32 }}
-                    >
-                      <MenuItem value="FILED">FILED</MenuItem>
-                      <MenuItem value="UNDER_REVIEW">UNDER REVIEW</MenuItem>
-                      <MenuItem value="APPROVED">APPROVED</MenuItem>
-                      <MenuItem value="REJECTED">REJECTED</MenuItem>
-                    </Select>
+                  <TableCell align="center">
+                    <Tooltip title="Adjudicated by Claims Officer Module">
+                      <Chip
+                        icon={<GavelIcon sx={{ fontSize: '13px !important' }} />}
+                        label={claim.status.replace('_', ' ')}
+                        size="small"
+                        color={
+                          claim.status === 'APPROVED' ? 'success' :
+                          claim.status === 'REJECTED' ? 'error' : 'warning'
+                        }
+                        sx={{ fontWeight: 800 }}
+                      />
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))
@@ -203,10 +184,10 @@ const ClaimsPage = () => {
         </Table>
       </TableContainer>
 
-      {/* File Claim Modal */}
+      {/* File Claim Notice Modal */}
       <Dialog open={fileModalOpen} onClose={() => setFileModalOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#002970', borderBottom: '1px solid #eee' }}>
-          File Insurance Claim
+          Submit Client Claim Notice
         </DialogTitle>
         <DialogContent sx={{ pt: 3 }}>
           {fileMsg.text && (
@@ -217,10 +198,10 @@ const ClaimsPage = () => {
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
             <FormControl fullWidth required>
-              <InputLabel>Select Active Policy</InputLabel>
+              <InputLabel>Select Client Policy</InputLabel>
               <Select
                 value={claimForm.policy_id}
-                label="Select Active Policy"
+                label="Select Client Policy"
                 onChange={(e) => setClaimForm({ ...claimForm, policy_id: e.target.value })}
               >
                 {policies.map((p) => (
@@ -277,7 +258,7 @@ const ClaimsPage = () => {
             disabled={submitting}
             sx={{ fontWeight: 700 }}
           >
-            {submitting ? <CircularProgress size={22} color="inherit" /> : 'File Claim & Compute Risk'}
+            {submitting ? <CircularProgress size={22} color="inherit" /> : 'Submit Notice'}
           </Button>
         </DialogActions>
       </Dialog>

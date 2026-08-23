@@ -20,7 +20,7 @@ const Sidebar = ({ open, onClose }) => {
     { text: 'Insurance Plans', icon: <MenuBookIcon />, path: '/policies/catalog', badge: 'CATALOG' },
     { text: 'Customer Policies', icon: <PolicyIcon />, path: '/policies' },
     { text: 'Customer Directory', icon: <PeopleIcon />, path: '/users' },
-    { text: 'Claims Desk', icon: <AssignmentLateIcon />, path: '/claims' },
+    { text: 'Claims Assistance', icon: <AssignmentLateIcon />, path: '/claims' },
   ];
 
   const handleNavigate = (path) => {

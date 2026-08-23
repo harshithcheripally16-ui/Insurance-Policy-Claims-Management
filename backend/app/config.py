@@ -10,12 +10,12 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str = "sqlite:///./insurance_app.db"
     
-    # SMTP Email Settings (With sensible defaults / fallback)
+    # SMTP Email Settings for Live OTP & Policy Renewal Notifications
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
-    SMTP_USER: str = os.getenv("SMTP_USER", "notifications@insure.com")
-    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "secretpassword")
-    EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL", "support@insure.com")
+    SMTP_USER: str = os.getenv("SMTP_USER", "harshithcheripally16@gmail.com")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "mhgmcuiaivhsvmri")
+    EMAILS_FROM_EMAIL: str = os.getenv("EMAILS_FROM_EMAIL", "harshithcheripally16@gmail.com")
     EMAILS_FROM_NAME: str = "Policybazaar Insurance Desk"
 
     model_config = {

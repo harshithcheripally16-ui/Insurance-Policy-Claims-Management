@@ -63,15 +63,15 @@ def _dispatch_email(to_email: str, subject: str, html_content: str) -> bool:
         part = MIMEText(html_content, "html")
         msg.attach(part)
         
-        # Try real SMTP send, log fallback if SMTP server not available locally
+        # Live SMTP email dispatch with StartTLS
         try:
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=3) as server:
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.sendmail(settings.EMAILS_FROM_EMAIL, [to_email], msg.as_string())
-            logger.info(f"Successfully sent email to {to_email}")
+            logger.info(f"Successfully sent live email via SMTP to {to_email}")
         except Exception as e:
-            logger.warning(f"SMTP Dispatch simulated (Server unreachable/offline: {e}). Email subject: {subject}")
+            logger.warning(f"SMTP Dispatch fallback notice: {e}. Email subject: {subject}")
         return True
     except Exception as ex:
         logger.error(f"Failed to generate email message: {ex}")

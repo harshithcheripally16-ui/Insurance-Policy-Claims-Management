@@ -83,7 +83,7 @@ const Dashboard = () => {
             Welcome back, {user?.name || 'Priya Nair'}!
           </Typography>
           <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.85)', mb: 3, fontSize: '1.05rem' }}>
-            Your Policybazaar Insurance Operations Overview. Track active customer policies, premium revenues, and issue new coverage plans seamlessly.
+            Your InsurCare Insurance Operations Overview. Track active customer policies, premium revenues, and issue new coverage plans seamlessly.
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>

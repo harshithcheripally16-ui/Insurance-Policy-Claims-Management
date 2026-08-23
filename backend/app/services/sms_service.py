@@ -8,7 +8,7 @@ def send_sms_reminder(phone: str, customer_name: str, policy_number: str, valid_
     Logs output and provides standard SMS gateway integration structure.
     """
     message = (
-        f"Policybazaar Notice: Dear {customer_name}, your Insurance Policy {policy_number} "
+        f"InsurCare Notice: Dear {customer_name}, your Insurance Policy {policy_number} "
         f"expires on {valid_until}. Please renew now to maintain continuous coverage benefits. "
         f"Contact your agent for assistance."
     )

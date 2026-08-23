@@ -7,13 +7,13 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 def send_otp_email(to_email: str, otp_code: str, purpose: str) -> bool:
-    subject = f"Your Policybazaar Verification Code: {otp_code}"
+    subject = f"Your InsurCare Verification Code: {otp_code}"
     
     html_content = f"""
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f4f7fc; padding: 20px;">
         <div style="max-width: 500px; margin: 0 auto; background: #ffffff; border-radius: 8px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid #ff5a00;">
-          <h2 style="color: #002970; margin-top: 0;">Policybazaar Security Desk</h2>
+          <h2 style="color: #002970; margin-top: 0;">InsurCare Security Desk</h2>
           <p style="font-size: 14px; color: #555;">Hello,</p>
           <p style="font-size: 14px; color: #555;">Your verification code for <strong>{purpose.replace('_', ' ')}</strong> is:</p>
           <div style="text-align: center; margin: 25px 0;">
@@ -21,7 +21,7 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str) -> bool:
           </div>
           <p style="font-size: 13px; color: #777;">This code is valid for 10 minutes. If you did not request this, please ignore this email.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 11px; color: #aaa; text-align: center;">Policybazaar Insurance Desk &bull; 100% Verified Security</p>
+          <p style="font-size: 11px; color: #aaa; text-align: center;">InsurCare Insurance Desk &bull; 100% Verified Security</p>
         </div>
       </body>
     </html>
@@ -45,7 +45,7 @@ def send_renewal_reminder_email(to_email: str, customer_name: str, policy_number
           </div>
           <p style="font-size: 13px; color: #555;">Please contact your assigned Insurance Agent or log into your client portal to renew standard benefits.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-          <p style="font-size: 11px; color: #aaa; text-align: center;">Policybazaar Client Services Desk</p>
+          <p style="font-size: 11px; color: #aaa; text-align: center;">InsurCare Client Services Desk</p>
         </div>
       </body>
     </html>

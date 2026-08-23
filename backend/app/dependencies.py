@@ -12,7 +12,7 @@ from app.database import get_db
 from app.models import User, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
-SALT = b"policybazaar_secure_salt_2026"
+SALT = b"insurcare_secure_salt_2026"
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:

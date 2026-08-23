@@ -110,7 +110,7 @@ const Register = () => {
               Create Account
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-              Join Policybazaar Insurance Network
+              Join InsurCare Insurance Network
             </Typography>
           </Box>
 

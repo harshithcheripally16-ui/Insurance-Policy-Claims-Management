@@ -19,7 +19,7 @@ export const generatePolicyCertificatePDF = (policy) => {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(22);
-  doc.text('POLICYBAZAAR', 14, 18);
+  doc.text('INSURCARE', 14, 18);
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
@@ -90,7 +90,7 @@ export const generatePolicyCertificatePDF = (policy) => {
   doc.setTextColor(...coverageTeal);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text('POLICYBAZAAR VERIFIED ASSURANCE SEAL', 20, finalY + 18);
+  doc.text('INSURCARE VERIFIED ASSURANCE SEAL', 20, finalY + 18);
 
   doc.setTextColor(60, 70, 80);
   doc.setFontSize(8.5);
@@ -114,12 +114,12 @@ export const generatePolicyCertificatePDF = (policy) => {
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text('Authorized Insurance Agent', 142, finalY + 58);
-  doc.text('Policybazaar Desk', 142, finalY + 63);
+  doc.text('InsurCare Desk', 142, finalY + 63);
 
   // Footer
   doc.setFontSize(8);
   doc.setTextColor(150, 150, 150);
-  doc.text('Generated electronically by Policybazaar Insurance Portal • Valid without physical signature', 14, 285);
+  doc.text('Generated electronically by InsurCare Insurance Portal • Valid without physical signature', 14, 285);
 
   doc.save(`Policy_Certificate_${policy.policy_number}.pdf`);
 };

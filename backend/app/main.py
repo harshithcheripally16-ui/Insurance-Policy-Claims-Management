@@ -19,7 +19,7 @@ from app.routers import (
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Policybazaar Insurance & Claims Management API",
+    title="InsurCare Insurance & Claims Management API",
     description="Production-ready Insurance Policy & Claims Management System API",
     version="1.0.0"
 )
@@ -45,7 +45,7 @@ app.include_router(notifications_router.router)
 def root():
     return {
         "status": "Online",
-        "system": "Policybazaar Insurance & Claims Management Engine",
+        "system": "InsurCare Insurance & Claims Management Engine",
         "agent": "Priya Nair (Verified Insurance Agent)"
     }
 
@@ -227,7 +227,7 @@ def seed_database():
             notif = Notification(
                 user_id=agent.id,
                 title="Welcome Agent Priya Nair",
-                message="Your Policybazaar Insurance Portal is ready. 4 client policies are active.",
+                message="Your InsurCare Insurance Portal is ready. 4 client policies are active.",
                 channel="IN_APP"
             )
             db.add(notif)

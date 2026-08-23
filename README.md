@@ -1,6 +1,6 @@
-# Policybazaar-Inspired Insurance Policy & Claims Management System
+# InsurCare-Inspired Insurance Policy & Claims Management System
 
-A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by Policybazaar (~70% visual identity & UX match), developed as a **Group Project by Team Antigravity**.
+A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by InsurCare (~70% visual identity & UX match), developed as a **Group Project by Team Antigravity**.
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Backend-FastAPI-009688.svg)
@@ -62,7 +62,7 @@ git push origin feature/[module-name]
 
 ## 🌟 Key System Capabilities
 
-### 🏢 Policybazaar Visual System Identity (~70% Match)
+### 🏢 InsurCare Visual System Identity (~70% Match)
 
 - **Brand Palette**: Signature Vibrant Orange (`#ff5a00`), Corporate Navy (`#002970`), Coverage Accent Teal (`#00a896`), and Soft Ice Blue background gradient (`#edf5ff`).
 - **Glassmorphic Navigation**: Top glassmorphic header bar with a hamburger toggle button positioned immediately to the left of the brand logo, launching an animated sliding Drawer navigation menu.

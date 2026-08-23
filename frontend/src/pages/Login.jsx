@@ -144,7 +144,7 @@ const Login = () => {
               <SecurityIcon sx={{ fontSize: 30 }} />
             </Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: '#002970' }}>
-              policybazaar<span style={{ color: '#ff5a00' }}>.pro</span>
+              insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
             </Typography>
             <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5, fontWeight: 500 }}>
               Insurance Agent & Client Portal Sign-In

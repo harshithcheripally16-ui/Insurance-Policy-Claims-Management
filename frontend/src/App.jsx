@@ -15,7 +15,6 @@ import Dashboard from './pages/Dashboard';
 import InsurancePlansPage from './pages/InsurancePlansPage';
 import PoliciesPage from './pages/PoliciesPage';
 import UsersPage from './pages/UsersPage';
-import ClaimsPage from './pages/ClaimsPage';
 
 // Protected Layout component wrapping Navbar & Sidebar inside ErrorBoundary
 const ProtectedLayout = () => {
@@ -51,7 +50,6 @@ function AppRoutes() {
         <Route path="/policies/catalog" element={<InsurancePlansPage />} />
         <Route path="/policies" element={<PoliciesPage />} />
         <Route path="/users" element={<UsersPage />} />
-        <Route path="/claims" element={<ClaimsPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from app.database import get_db
 from app.models import User, Policy, PolicyCatalog, PolicyStatus, PolicyCategory, UserRole
 from app.schemas import (
-    PolicyOut, PolicyCatalogOut, PolicyCatalogCreate, PolicyCreate, IssuePolicyRequest, PolicyStatusUpdate
+    PolicyOut, PolicyCatalogOut, PolicyCatalogCreate, PolicyCreate, IssuePolicyRequest, PolicyStatusUpdate, PolicyUpdate
 )
 from app.dependencies import get_current_user, require_roles
 from app.services.smtp_service import send_renewal_reminder_email
@@ -179,6 +179,45 @@ def update_policy_status(
     if policy.agent:
         p_dict.agent_name = policy.agent.name
     return p_dict
+
+@router.put("/{policy_id}", response_model=PolicyOut)
+def update_policy(
+    policy_id: int,
+    policy_in: PolicyUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.AGENT, UserRole.ADMIN))
+):
+    policy = db.query(Policy).filter(Policy.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    update_data = policy_in.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(policy, key, value)
+
+    db.commit()
+    db.refresh(policy)
+
+    p_dict = PolicyOut.model_validate(policy)
+    if policy.customer:
+        p_dict.customer_name = policy.customer.name
+    if policy.agent:
+        p_dict.agent_name = policy.agent.name
+    return p_dict
+
+@router.delete("/{policy_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_policy(
+    policy_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.AGENT, UserRole.ADMIN))
+):
+    policy = db.query(Policy).filter(Policy.id == policy_id).first()
+    if not policy:
+        raise HTTPException(status_code=404, detail="Policy not found")
+
+    db.delete(policy)
+    db.commit()
+    return None
 
 @router.post("/{policy_id}/send-email-reminder")
 def send_email_reminder(

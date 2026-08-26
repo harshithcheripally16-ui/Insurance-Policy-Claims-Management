@@ -101,6 +101,14 @@ class PolicyOut(BaseModel):
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
 
+class PolicyUpdate(BaseModel):
+    title: Optional[str] = None
+    category: Optional[PolicyCategory] = None
+    premium_amount: Optional[float] = None
+    coverage_amount: Optional[float] = None
+    status: Optional[PolicyStatus] = None
+    valid_until: Optional[datetime] = None
+
 class PolicyStatusUpdate(BaseModel):
     status: PolicyStatus
 

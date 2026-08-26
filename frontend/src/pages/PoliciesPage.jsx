@@ -3,7 +3,7 @@ import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, Chip, Button, TextField, MenuItem, Select,
   FormControl, InputLabel, IconButton, Alert, CircularProgress, Tooltip,
-  Paper
+  Paper, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import EmailIcon from '@mui/icons-material/Email';
@@ -11,6 +11,8 @@ import SmsIcon from '@mui/icons-material/Sms';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import api from '../services/api';
 import { generatePolicyCertificatePDF } from '../utils/pdfGenerator';
@@ -28,6 +30,12 @@ const PoliciesPage = () => {
 
   const [alertInfo, setAlertInfo] = useState({ type: '', text: '' });
   const [actionLoadingId, setActionLoadingId] = useState(null);
+
+  // CRUD state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPolicy, setEditingPolicy] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [policyToDelete, setPolicyToDelete] = useState(null);
 
   const fetchPolicies = async () => {
     setLoading(true);
@@ -68,7 +76,6 @@ const PoliciesPage = () => {
     try {
       const res = await api.post(`/policies/${policyId}/send-email-reminder`);
       setAlertInfo({ type: 'success', text: res.data.message });
-      // Refresh list to update "Last Reminder Sent" timestamp column
       await fetchPolicies();
     } catch (err) {
       setAlertInfo({ type: 'error', text: err.response?.data?.detail || 'Failed to dispatch email reminder' });
@@ -83,12 +90,62 @@ const PoliciesPage = () => {
     try {
       const res = await api.post(`/policies/${policyId}/send-sms-reminder`);
       setAlertInfo({ type: 'success', text: res.data.message });
-      // Refresh list to update "Last Reminder Sent" timestamp column
       await fetchPolicies();
     } catch (err) {
       setAlertInfo({ type: 'error', text: err.response?.data?.detail || 'Failed to dispatch SMS reminder' });
     } finally {
       setActionLoadingId(null);
+    }
+  };
+
+  const handleOpenEdit = (policy) => {
+    setEditingPolicy({ 
+      ...policy, 
+      valid_until: policy.valid_until ? policy.valid_until.split('T')[0] : '' 
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setEditModalOpen(false);
+    setEditingPolicy(null);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await api.put(`/policies/${editingPolicy.id}`, {
+        title: editingPolicy.title,
+        premium_amount: editingPolicy.premium_amount,
+        coverage_amount: editingPolicy.coverage_amount,
+        status: editingPolicy.status,
+        valid_until: editingPolicy.valid_until ? new Date(editingPolicy.valid_until).toISOString() : null,
+      });
+      setAlertInfo({ type: 'success', text: 'Policy updated successfully' });
+      handleCloseEdit();
+      fetchPolicies();
+    } catch (err) {
+      setAlertInfo({ type: 'error', text: err.response?.data?.detail || 'Failed to update policy' });
+    }
+  };
+
+  const handleOpenDelete = (policy) => {
+    setPolicyToDelete(policy);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleCloseDelete = () => {
+    setDeleteDialogOpen(false);
+    setPolicyToDelete(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await api.delete(`/policies/${policyToDelete.id}`);
+      setAlertInfo({ type: 'success', text: 'Policy deleted successfully' });
+      handleCloseDelete();
+      fetchPolicies();
+    } catch (err) {
+      setAlertInfo({ type: 'error', text: err.response?.data?.detail || 'Failed to delete policy' });
     }
   };
 
@@ -226,7 +283,7 @@ const PoliciesPage = () => {
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Premium (₹)</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Status</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Expiry Date</TableCell>
-              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Last Reminder Sent</TableCell>
+              <TableCell sx={{ color: '#fff', fontWeight: 700 }}>Last Reminder</TableCell>
               <TableCell sx={{ color: '#fff', fontWeight: 700, textAlign: 'center' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -269,41 +326,29 @@ const PoliciesPage = () => {
                     {formatReminderTimestamp(p.last_reminder_sent)}
                   </TableCell>
                   <TableCell align="center">
-                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                      {/* 1-Click Email Reminder */}
-                      <Tooltip title="Send 1-Click Email Renewal Reminder">
-                        <IconButton
-                          color="primary"
-                          size="small"
-                          onClick={() => handleSendEmailReminder(p.id)}
-                          disabled={actionLoadingId === p.id}
-                          sx={{ bgcolor: 'rgba(0,41,112,0.06)' }}
-                        >
+                    <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                      <Tooltip title="Edit Policy">
+                        <IconButton size="small" onClick={() => handleOpenEdit(p)} sx={{ bgcolor: 'rgba(0,41,112,0.06)' }}>
+                          <EditIcon fontSize="small" sx={{ color: '#002970' }} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Policy">
+                        <IconButton size="small" onClick={() => handleOpenDelete(p)} sx={{ bgcolor: 'rgba(211,47,47,0.06)' }}>
+                          <DeleteIcon fontSize="small" color="error" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Send Email Reminder">
+                        <IconButton color="primary" size="small" onClick={() => handleSendEmailReminder(p.id)} disabled={actionLoadingId === p.id} sx={{ bgcolor: 'rgba(0,41,112,0.06)' }}>
                           <EmailIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-
-                      {/* 1-Click SMS Reminder */}
-                      <Tooltip title="Send 1-Click Phone SMS Reminder">
-                        <IconButton
-                          color="secondary"
-                          size="small"
-                          onClick={() => handleSendSmsReminder(p.id)}
-                          disabled={actionLoadingId === p.id}
-                          sx={{ bgcolor: 'rgba(255,90,0,0.08)' }}
-                        >
+                      <Tooltip title="Send SMS Reminder">
+                        <IconButton color="secondary" size="small" onClick={() => handleSendSmsReminder(p.id)} disabled={actionLoadingId === p.id} sx={{ bgcolor: 'rgba(255,90,0,0.08)' }}>
                           <SmsIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
-
-                      {/* 1-Click PDF Policy Certificate Download */}
-                      <Tooltip title="Download A4 Policy Guarantee Certificate (PDF)">
-                        <IconButton
-                          color="success"
-                          size="small"
-                          onClick={() => generatePolicyCertificatePDF(p)}
-                          sx={{ bgcolor: 'rgba(0,168,150,0.1)' }}
-                        >
+                      <Tooltip title="Download Certificate">
+                        <IconButton color="success" size="small" onClick={() => generatePolicyCertificatePDF(p)} sx={{ bgcolor: 'rgba(0,168,150,0.1)' }}>
                           <PictureAsPdfIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -315,6 +360,82 @@ const PoliciesPage = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Edit Policy Modal */}
+      <Dialog open={editModalOpen} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800, color: '#002970' }}>Edit Policy Details</DialogTitle>
+        <DialogContent dividers>
+          {editingPolicy && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <TextField
+                label="Coverage Title"
+                fullWidth
+                value={editingPolicy.title}
+                onChange={(e) => setEditingPolicy({ ...editingPolicy, title: e.target.value })}
+              />
+              <TextField
+                label="Premium Amount (₹)"
+                type="number"
+                fullWidth
+                value={editingPolicy.premium_amount}
+                onChange={(e) => setEditingPolicy({ ...editingPolicy, premium_amount: parseFloat(e.target.value) })}
+              />
+              <TextField
+                label="Sum Insured / Coverage Amount (₹)"
+                type="number"
+                fullWidth
+                value={editingPolicy.coverage_amount}
+                onChange={(e) => setEditingPolicy({ ...editingPolicy, coverage_amount: parseFloat(e.target.value) })}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={editingPolicy.status}
+                  label="Status"
+                  onChange={(e) => setEditingPolicy({ ...editingPolicy, status: e.target.value })}
+                >
+                  <MenuItem value="ACTIVE">ACTIVE</MenuItem>
+                  <MenuItem value="SUSPENDED">SUSPENDED</MenuItem>
+                  <MenuItem value="EXPIRED">EXPIRED</MenuItem>
+                  <MenuItem value="CANCELLED">CANCELLED</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                label="Valid Until"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={editingPolicy.valid_until}
+                onChange={(e) => setEditingPolicy({ ...editingPolicy, valid_until: e.target.value })}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseEdit} color="inherit" sx={{ fontWeight: 700 }}>Cancel</Button>
+          <Button onClick={handleSaveEdit} variant="contained" sx={{ bgcolor: '#ff5a00', fontWeight: 700 }}>
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={handleCloseDelete}>
+        <DialogTitle sx={{ fontWeight: 800, color: '#d32f2f' }}>Delete Policy?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to permanently delete policy 
+            <strong style={{ marginLeft: 4 }}>{policyToDelete?.policy_number}</strong>? 
+            This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseDelete} color="inherit" sx={{ fontWeight: 700 }}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained" sx={{ fontWeight: 700 }}>
+            Delete Permanently
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

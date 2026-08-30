@@ -363,7 +363,14 @@ const PoliciesPage = () => {
 
       {/* Edit Policy Modal */}
       <Dialog open={editModalOpen} onClose={handleCloseEdit} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 800, color: '#002970' }}>Edit Policy Details</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800, color: '#002970', pb: 1 }}>
+          Edit Policy Details
+          {editingPolicy?.customer_name && (
+            <Typography variant="body2" color="textSecondary" sx={{ fontWeight: 600, mt: 0.5 }}>
+              Customer: {editingPolicy.customer_name}
+            </Typography>
+          )}
+        </DialogTitle>
         <DialogContent dividers>
           {editingPolicy && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>

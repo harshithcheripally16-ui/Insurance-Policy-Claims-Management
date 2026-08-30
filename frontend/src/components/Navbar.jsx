@@ -175,7 +175,12 @@ const Navbar = ({ onToggleSidebar }) => {
             </Box>
 
             <Chip
-              label="AGENT PORTAL"
+              label={
+                user?.role === 'ADMIN' ? 'ADMIN PORTAL' :
+                user?.role === 'CUSTOMER' ? 'CUSTOMER PORTAL' :
+                user?.role === 'CLAIMS_OFFICER' ? 'CLAIMS OFFICER PORTAL' :
+                'AGENT PORTAL'
+              }
               size="small"
               sx={{
                 ml: 1,
@@ -189,7 +194,7 @@ const Navbar = ({ onToggleSidebar }) => {
             />
           </Box>
 
-          {/* Right Action Icons & Agent Profile */}
+          {/* Right Action Icons & Profile */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <IconButton
               onClick={() => setNotifDrawerOpen(true)}
@@ -224,14 +229,19 @@ const Navbar = ({ onToggleSidebar }) => {
                   fontWeight: 700
                 }}
               >
-                {user?.name ? user.name[0] : 'P'}
+                {user?.name ? user.name.replace(/\s+(Customer|Admin|Officer|Agent)$/i, '').trim()[0] : 'U'}
               </Avatar>
               <Box sx={{ display: { xs: 'none', sm: 'block' }, textAlign: 'left', pr: 1 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1.2, color: '#002970' }}>
-                  {user?.name || 'Priya Nair'}
+                  {user?.name ? user.name.replace(/\s+(Customer|Admin|Officer|Agent)$/i, '').trim() : 'User'}
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#00a896', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.3 }}>
-                  <VerifiedUserIcon sx={{ fontSize: 11 }} /> Verified Agent
+                  <VerifiedUserIcon sx={{ fontSize: 11 }} /> {
+                    user?.role === 'ADMIN' ? 'Verified Admin' :
+                    user?.role === 'CUSTOMER' ? 'Verified Customer' :
+                    user?.role === 'CLAIMS_OFFICER' ? 'Verified Officer' :
+                    'Verified Agent'
+                  }
                 </Typography>
               </Box>
             </Box>
@@ -247,7 +257,12 @@ const Navbar = ({ onToggleSidebar }) => {
             >
               <MenuItem onClick={() => { setAnchorEl(null); setProfileModalOpen(true); setIsEditingProfile(false); setProfileMsg({ type: '', text: '' }); }}>
                 <ListItemIcon><AccountCircleIcon fontSize="small" sx={{ color: '#002970' }} /></ListItemIcon>
-                Agent Profile
+                {
+                  user?.role === 'ADMIN' ? 'Admin Profile' :
+                  user?.role === 'CUSTOMER' ? 'Customer Profile' :
+                  user?.role === 'CLAIMS_OFFICER' ? 'Officer Profile' :
+                  'Agent Profile'
+                }
               </MenuItem>
               <Divider />
               <MenuItem onClick={() => { setAnchorEl(null); logoutUser(); }}>
@@ -318,10 +333,17 @@ const Navbar = ({ onToggleSidebar }) => {
         </List>
       </Drawer>
 
-      {/* Agent Profile Modal with Editable Name, Email, Phone & Picture */}
+      {/* Profile Modal with Editable Name, Email, Phone & Picture */}
       <Dialog open={profileModalOpen} onClose={() => setProfileModalOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ fontWeight: 700, color: '#002970', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Agent Profile Details</span>
+          <span>
+            {
+              user?.role === 'ADMIN' ? 'Admin Profile Details' :
+              user?.role === 'CUSTOMER' ? 'Customer Profile Details' :
+              user?.role === 'CLAIMS_OFFICER' ? 'Officer Profile Details' :
+              'Agent Profile Details'
+            }
+          </span>
           {!isEditingProfile && (
             <Button
               size="small"
@@ -355,7 +377,7 @@ const Navbar = ({ onToggleSidebar }) => {
                   border: '3px solid #ffffff',
                 }}
               >
-                {user?.name ? user.name[0] : 'P'}
+                {user?.name ? user.name.replace(/\s+(Customer|Admin|Officer|Agent)$/i, '').trim()[0] : 'U'}
               </Avatar>
 
               <IconButton
@@ -393,7 +415,12 @@ const Navbar = ({ onToggleSidebar }) => {
 
             <Chip
               icon={<VerifiedUserIcon sx={{ fontSize: '14px !important' }} />}
-              label="VERIFIED INSURANCE AGENT"
+              label={
+                user?.role === 'ADMIN' ? 'VERIFIED ADMINISTRATOR' :
+                user?.role === 'CUSTOMER' ? 'VERIFIED POLICYHOLDER' :
+                user?.role === 'CLAIMS_OFFICER' ? 'VERIFIED CLAIMS OFFICER' :
+                'VERIFIED INSURANCE AGENT'
+              }
               color="success"
               size="small"
               sx={{ mt: 0.5, fontWeight: 700 }}
@@ -404,7 +431,12 @@ const Navbar = ({ onToggleSidebar }) => {
           {isEditingProfile ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
               <TextField
-                label="Agent Full Name"
+                label={
+                  user?.role === 'ADMIN' ? 'Admin Full Name' :
+                  user?.role === 'CUSTOMER' ? 'Customer Full Name' :
+                  user?.role === 'CLAIMS_OFFICER' ? 'Officer Full Name' :
+                  'Agent Full Name'
+                }
                 size="small"
                 value={profileForm.name}
                 onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
@@ -433,7 +465,7 @@ const Navbar = ({ onToggleSidebar }) => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }}>
               <Box sx={{ textAlign: 'center', mb: 1 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#002970' }}>
-                  {user?.name || 'Priya Nair'}
+                  {user?.name ? user.name.replace(/\s+(Customer|Admin|Officer|Agent)$/i, '').trim() : 'User'}
                 </Typography>
               </Box>
 

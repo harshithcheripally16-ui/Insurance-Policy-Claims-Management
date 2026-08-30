@@ -45,13 +45,23 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
+        sub = payload.get("sub")
+        email = payload.get("email")
+        if not sub and not email:
             raise credentials_exception
-    except jwt.PyJWTError:
+    except Exception:
         raise credentials_exception
 
-    user = db.query(User).filter(User.email == email).first()
+    user = None
+    if email:
+        user = db.query(User).filter(User.email == email).first()
+    if not user and sub:
+        sub_str = str(sub)
+        if sub_str.isdigit():
+            user = db.query(User).filter(User.id == int(sub_str)).first()
+        if not user:
+            user = db.query(User).filter(User.email == sub_str).first()
+
     if user is None:
         raise credentials_exception
     return user
@@ -65,3 +75,41 @@ def require_roles(*roles: UserRole):
             )
         return current_user
     return role_checker
+
+def require_admin(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Admin role required")
+    return current_user
+
+def require_customer(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRole.CUSTOMER:
+        raise HTTPException(status_code=403, detail="Customer role required")
+    return current_user
+
+def require_claims_officer(current_user: User = Depends(get_current_user)):
+    if current_user.role not in [UserRole.CLAIMS_OFFICER, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Claims Officer role required")
+    return current_user
+
+def log_audit_action(db: Session, admin_id: Optional[int], action: str, target_type: Optional[str] = None, target_id: Optional[str] = None, details: Optional[str] = None):
+    try:
+        from app.models import AuditLog
+        log = AuditLog(admin_id=admin_id, action=action, target_type=target_type, target_id=target_id, details=details)
+        db.add(log)
+        db.commit()
+    except Exception:
+        db.rollback()
+
+def create_notification(db: Session, user_id: int, title: str, message: str, channel: str = "IN_APP", notification_type: str = "INFO", link: Optional[str] = None):
+    try:
+        from app.models import Notification
+        notif = Notification(user_id=user_id, title=title, message=message, channel=channel)
+        db.add(notif)
+        db.commit()
+    except Exception:
+        db.rollback()
+
+def require_agent(current_user: User = Depends(get_current_user)):
+    if current_user.role not in [UserRole.AGENT, UserRole.ADMIN]:
+        raise HTTPException(status_code=403, detail="Agent role required")
+    return current_user

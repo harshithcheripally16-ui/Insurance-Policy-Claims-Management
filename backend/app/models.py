@@ -8,6 +8,7 @@ class UserRole(str, enum.Enum):
     AGENT = "AGENT"
     CUSTOMER = "CUSTOMER"
     ADMIN = "ADMIN"
+    CLAIMS_OFFICER = "CLAIMS_OFFICER"
 
 class PolicyStatus(str, enum.Enum):
     ACTIVE = "ACTIVE"
@@ -37,13 +38,31 @@ class User(Base):
     phone = Column(String(20), nullable=True)
     avatar_url = Column(Text, nullable=True)
     role = Column(Enum(UserRole), default=UserRole.CUSTOMER, nullable=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
     # Relationships
     customer_policies = relationship("Policy", foreign_keys="Policy.customer_id", back_populates="customer")
     agent_policies = relationship("Policy", foreign_keys="Policy.agent_id", back_populates="agent")
     claims = relationship("Claim", back_populates="customer")
     notifications = relationship("Notification", back_populates="user")
+
+    @property
+    def full_name(self):
+        return self.name
+
+    @full_name.setter
+    def full_name(self, value):
+        self.name = value
+
+    @property
+    def password_hash(self):
+        return self.hashed_password
+
+    @password_hash.setter
+    def password_hash(self, value):
+        self.hashed_password = value
 
 class PolicyCatalog(Base):
     __tablename__ = "policy_catalogs"
@@ -54,11 +73,23 @@ class PolicyCatalog(Base):
     description = Column(Text, nullable=True)
     base_premium = Column(Float, nullable=False)
     coverage_amount = Column(Float, nullable=False)
-    features = Column(Text, nullable=True) # JSON or comma-separated string
+    features = Column(Text, nullable=True)
     bestseller_tag = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     policies = relationship("Policy", back_populates="catalog")
+
+    @property
+    def type(self):
+        return self.category.value if hasattr(self.category, 'value') else str(self.category)
+
+    @property
+    def premium(self):
+        return self.base_premium
+
+    @property
+    def coverage(self):
+        return self.coverage_amount
 
 class Policy(Base):
     __tablename__ = "policies"
@@ -85,6 +116,18 @@ class Policy(Base):
     catalog = relationship("PolicyCatalog", back_populates="policies")
     claims = relationship("Claim", back_populates="policy")
 
+    @property
+    def type(self):
+        return self.category.value if hasattr(self.category, 'value') else str(self.category)
+
+    @property
+    def premium(self):
+        return self.premium_amount
+
+    @property
+    def coverage(self):
+        return self.coverage_amount
+
 class Claim(Base):
     __tablename__ = "claims"
 
@@ -97,12 +140,20 @@ class Claim(Base):
     amount_claimed = Column(Float, nullable=False)
     description = Column(Text, nullable=False)
     status = Column(Enum(ClaimStatus), default=ClaimStatus.FILED, nullable=False)
-    risk_score = Column(Float, default=0.0) # Calculated by risk_engine
+    risk_score = Column(Float, default=0.0)
     document_name = Column(String(255), nullable=True)
     filed_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     policy = relationship("Policy", back_populates="claims")
     customer = relationship("User", back_populates="claims")
+
+    @property
+    def amount(self):
+        return self.amount_claimed
+
+    @property
+    def claim_date(self):
+        return self.filed_at
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -112,7 +163,7 @@ class Notification(Base):
     title = Column(String(150), nullable=False)
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
-    channel = Column(String(20), default="IN_APP") # IN_APP, EMAIL, SMS
+    channel = Column(String(20), default="IN_APP")
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="notifications")
@@ -123,6 +174,41 @@ class OTPRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(120), index=True, nullable=False)
     otp_code = Column(String(10), nullable=False)
-    purpose = Column(String(50), nullable=False) # REGISTER, FORGOT_PASSWORD
+    purpose = Column(String(50), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class ClaimReview(Base):
+    __tablename__ = "claim_reviews"
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(Integer, ForeignKey("claims.id"), nullable=False)
+    officer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    decision = Column(Enum(ClaimStatus), nullable=False)
+    remarks = Column(Text, nullable=True)
+    review_date = Column(DateTime, default=datetime.datetime.utcnow)
+    claim = relationship("Claim", backref="reviews")
+    officer = relationship("User")
+
+class Document(Base):
+    __tablename__ = "documents"
+    id = Column(Integer, primary_key=True, index=True)
+    claim_id = Column(Integer, ForeignKey("claims.id"), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
+    file_type = Column(String(100), nullable=False)
+    uploaded_date = Column(DateTime, default=datetime.datetime.utcnow)
+    claim = relationship("Claim", backref="documents")
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True, index=True)
+    admin_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    action = Column(String(255), nullable=False)
+    target_type = Column(String(100), nullable=True)
+    target_id = Column(String(100), nullable=True)
+    details = Column(Text, nullable=True)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    admin = relationship("User")
+
+# Alias Policy to PolicyPurchase for legacy router queries
+PolicyPurchase = Policy

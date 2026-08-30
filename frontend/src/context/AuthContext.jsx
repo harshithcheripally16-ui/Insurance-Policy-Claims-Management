@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 
 export const AuthContext = createContext();
@@ -56,4 +56,19 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  return {
+    ...context,
+    isAuthenticated: !!context.token && !!context.user,
+    isLoading: context.loading,
+    login: async (email, password) => {
+      const res = await context.loginUser(email, password);
+      if (!res.success) throw new Error(res.message);
+      return res.user;
+    },
+    logout: context.logoutUser,
+  };
 };

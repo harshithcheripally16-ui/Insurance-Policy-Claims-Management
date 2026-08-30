@@ -1,15 +1,14 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
-
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000,
 });
 
-// Request Interceptor to attach JWT token
+// Request interceptor: attach Bearer token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -18,19 +17,24 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
-// Response Interceptor for 401 token expiry handling
+// Response interceptor: handle 401 & 403
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      // Redirect to login if not already there
-      if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
-        window.location.href = '/login';
+    if (error.response) {
+      const { status } = error.response;
+      if (status === 401) {
+        // Token expired or invalid
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+          window.location.href = '/login?expired=true';
+        }
       }
     }
     return Promise.reject(error);

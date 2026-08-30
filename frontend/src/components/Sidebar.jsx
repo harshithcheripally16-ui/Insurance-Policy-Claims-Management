@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText, Box, Typography,
   Divider, Chip
@@ -14,13 +16,46 @@ import SecurityIcon from '@mui/icons-material/Security';
 const Sidebar = ({ open, onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
-  const menuItems = [
-    { text: 'Agent Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Insurance Plans', icon: <MenuBookIcon />, path: '/policies/catalog', badge: 'CATALOG' },
-    { text: 'Customer Policies', icon: <PolicyIcon />, path: '/policies' },
-    { text: 'Customer Directory', icon: <PeopleIcon />, path: '/users' },
-  ];
+  
+  const role = user?.role || 'CUSTOMER';
+  
+  let menuItems = [];
+  let headerText = 'NAVIGATION';
+
+  if (role === 'ADMIN') {
+    headerText = 'ADMIN NAVIGATION';
+    menuItems = [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
+      { text: 'All Users', icon: <PeopleIcon />, path: '/admin/users' },
+      { text: 'Insurance Policies', icon: <MenuBookIcon />, path: '/admin/policies' },
+      { text: 'Claims', icon: <AssignmentLateIcon />, path: '/admin/claims' },
+    ];
+  } else if (role === 'CUSTOMER') {
+    headerText = 'CUSTOMER NAVIGATION';
+    menuItems = [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/customer/dashboard' },
+      { text: 'Policy Catalog', icon: <MenuBookIcon />, path: '/customer/policies', badge: 'NEW' },
+      { text: 'My Policies', icon: <PolicyIcon />, path: '/customer/policies/my' },
+      { text: 'My Claims', icon: <AssignmentLateIcon />, path: '/customer/claims' },
+    ];
+  } else if (role === 'CLAIMS_OFFICER') {
+    headerText = 'OFFICER NAVIGATION';
+    menuItems = [
+      { text: 'Dashboard', icon: <DashboardIcon />, path: '/officer/dashboard' },
+      { text: 'Claims to Review', icon: <AssignmentLateIcon />, path: '/officer/claims' },
+    ];
+  } else if (role === 'AGENT') {
+    headerText = 'AGENT NAVIGATION';
+    menuItems = [
+      { text: 'Agent Dashboard', icon: <DashboardIcon />, path: '/agent/dashboard' },
+      { text: 'Customers Directory', icon: <PeopleIcon />, path: '/agent/customers' },
+      { text: 'Policy Purchases', icon: <PolicyIcon />, path: '/agent/purchases' },
+      { text: 'Claims Monitoring', icon: <AssignmentLateIcon />, path: '/agent/claims' },
+    ];
+  }
+
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -123,7 +158,7 @@ const Sidebar = ({ open, onClose }) => {
 
       <Box sx={{ mt: 'auto', p: 2, textAlign: 'center' }}>
         <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.4)' }}>
-          InsurCare Pro Agent Desk v1.0
+          InsurCare Pro v2.0
         </Typography>
       </Box>
     </Drawer>

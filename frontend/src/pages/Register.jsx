@@ -1,76 +1,76 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, Alert,
-  Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress,
-  MenuItem, Select, FormControl, InputLabel
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+  InputAdornment,
+  IconButton,
+  Divider,
 } from '@mui/material';
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import SecurityIcon from '@mui/icons-material/Security';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LockIcon from '@mui/icons-material/Lock';
+import { useNavigate, Link } from 'react-router-dom';
 
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: '',
+    full_name: '',
     email: '',
     phone: '',
     password: '',
-    role: 'CUSTOMER'
+    confirmPassword: '',
   });
 
-  const [otpModalOpen, setOtpModalOpen] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [demoOtp, setDemoOtp] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleStartRegister = async (e) => {
-    e.preventDefault();
     setError('');
-    setLoading(true);
-
-    try {
-      // Send OTP to email first
-      const res = await api.post('/auth/send-otp', {
-        email: formData.email,
-        purpose: 'REGISTER'
-      });
-
-      setDemoOtp(res.data.demo_otp);
-      setOtpModalOpen(true);
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to dispatch verification email');
-    } finally {
-      setLoading(false);
-    }
   };
 
-  const handleCompleteRegister = async () => {
-    if (!otpCode) {
-      setError('Please enter OTP code');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.full_name || !formData.email || !formData.password) {
+      setError('Please fill in all required fields.');
+      return;
+    }
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
       return;
     }
 
     setLoading(true);
     try {
-      await api.post('/auth/register', {
-        ...formData,
-        otp: otpCode
+      await register({
+        full_name: formData.full_name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
+        password: formData.password,
       });
-
-      setMsg('Account created successfully! Redirecting to login...');
-      setTimeout(() => {
-        navigate('/login');
-      }, 1500);
+      navigate('/customer/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Registration failed');
+      console.error('Registration error:', err);
+      const detail = err.response?.data?.detail || err.message || 'Registration failed. Please try again.';
+      setError(detail);
     } finally {
       setLoading(false);
     }
@@ -83,148 +83,197 @@ const Register = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #edf5ff 45%, #e1effc 100%)',
-        p: 2,
+        background: 'linear-gradient(135deg, #002970 0%, #001848 100%)',
+        p: 2.5,
       }}
     >
-      <Card sx={{ maxWidth: 480, width: '100%', borderRadius: 3, boxShadow: '0 12px 40px rgba(0, 41, 112, 0.12)' }}>
-        <CardContent sx={{ p: 4 }}>
+      <Card
+        sx={{
+          width: '100%',
+          maxWidth: 480,
+          borderRadius: 3.5,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: '#ffffff',
+          overflow: 'hidden',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, sm: 4.5 } }}>
+          {/* Header */}
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Box
               sx={{
-                width: 52,
-                height: 52,
+                width: 56,
+                height: 56,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ff5a00 0%, #d94b00 100%)',
-                display: 'flex',
+                bgcolor: '#ff5a00',
+                color: '#ffffff',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                margin: '0 auto',
                 mb: 1.5,
+                boxShadow: '0 4px 14px rgba(255, 90, 0, 0.4)',
               }}
             >
-              <SecurityIcon sx={{ fontSize: 30 }} />
+              <SecurityIcon sx={{ fontSize: 32 }} />
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#002970' }}>
-              Create Account
+            <Typography variant="h5" fontWeight="900" sx={{ color: '#002970', letterSpacing: '-0.5px' }}>
+              Insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
             </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-              Join InsurCare Insurance Network
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
+              Create Policyholder Account
             </Typography>
           </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {msg && <Alert severity="success" sx={{ mb: 2 }}>{msg}</Alert>}
+          {/* Error Alert */}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-          <form onSubmit={handleStartRegister}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <TextField
-                label="Full Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
+          {/* Form */}
+          <form onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              name="full_name"
+              label="Full Name"
+              placeholder="e.g. Ananya Roy"
+              value={formData.full_name}
+              onChange={handleChange}
+              required
+              margin="normal"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-              <TextField
-                label="Email Address"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
+            <TextField
+              fullWidth
+              name="email"
+              label="Email Address"
+              type="email"
+              placeholder="e.g. customer@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              margin="normal"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-              <TextField
-                label="Phone Number"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+91 98765 43210"
-                required
-                fullWidth
-              />
+            <TextField
+              fullWidth
+              name="phone"
+              label="Phone Number"
+              placeholder="+91 98765 43210"
+              value={formData.phone}
+              onChange={handleChange}
+              margin="normal"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PhoneIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-              <FormControl fullWidth>
-                <InputLabel>Account Role</InputLabel>
-                <Select
-                  name="role"
-                  value={formData.role}
-                  label="Account Role"
-                  onChange={handleChange}
-                >
-                  <MenuItem value="CUSTOMER">Client Account (Customer)</MenuItem>
-                  <MenuItem value="AGENT">Insurance Agent</MenuItem>
-                </Select>
-              </FormControl>
+            <TextField
+              fullWidth
+              name="password"
+              label="Password"
+              type={showPassword ? 'text' : 'password'}
+              value={formData.password}
+              onChange={handleChange}
+              required
+              margin="normal"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-              <TextField
-                label="Password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                fullWidth
-              />
+            <TextField
+              fullWidth
+              name="confirmPassword"
+              label="Confirm Password"
+              type={showPassword ? 'text' : 'password'}
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              margin="normal"
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <LockIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                size="large"
-                fullWidth
-                disabled={loading}
-                sx={{ py: 1.3, fontWeight: 700 }}
-              >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Send Verification OTP'}
-              </Button>
-            </Box>
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading}
+              sx={{
+                mt: 2.5,
+                mb: 2,
+                py: 1.4,
+                borderRadius: 2.5,
+                fontWeight: 800,
+                textTransform: 'none',
+                bgcolor: '#ff5a00',
+                color: '#ffffff',
+                boxShadow: '0 4px 14px rgba(255, 90, 0, 0.4)',
+                '&:hover': {
+                  bgcolor: '#e04f00',
+                  boxShadow: '0 6px 18px rgba(255, 90, 0, 0.5)',
+                },
+              }}
+            >
+              {loading ? 'Creating Account...' : 'Register as Policyholder'}
+            </Button>
           </form>
 
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" color="textSecondary">
-              Already registered?{' '}
-              <Link to="/login" style={{ color: '#ff5a00', fontWeight: 700, textDecoration: 'none' }}>
-                Sign In
+          <Divider sx={{ my: 2 }} />
+
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              Already have an account?{' '}
+              <Link to="/login" style={{ color: '#ff5a00', textDecoration: 'none', fontWeight: 700 }}>
+                Sign In Here
               </Link>
             </Typography>
           </Box>
         </CardContent>
       </Card>
-
-      {/* OTP Verification Modal */}
-      <Dialog open={otpModalOpen} onClose={() => setOtpModalOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#002970' }}>Email Verification OTP</DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-            A 6-digit security code was dispatched to <strong>{formData.email}</strong>.
-          </Typography>
-
-          {demoOtp && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Demo OTP Code: <strong>{demoOtp}</strong>
-            </Alert>
-          )}
-
-          <TextField
-            label="6-Digit Verification Code"
-            fullWidth
-            value={otpCode}
-            onChange={(e) => setOtpCode(e.target.value)}
-            placeholder="123456"
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOtpModalOpen(false)} color="inherit">Cancel</Button>
-          <Button onClick={handleCompleteRegister} variant="contained" color="secondary" disabled={loading}>
-            Verify & Create Account
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

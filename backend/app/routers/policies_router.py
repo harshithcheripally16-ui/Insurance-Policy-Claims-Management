@@ -93,7 +93,7 @@ def get_policies(
         except ValueError:
             pass
 
-    policies = q.order_by(Policy.id.desc()).all()
+    policies = q.order_by(Policy.id.asc()).all()
 
     # Enrich output with Customer & Agent Full Names
     out_list = []

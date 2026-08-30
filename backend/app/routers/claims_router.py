@@ -22,7 +22,7 @@ def get_claims(
     if current_user.role == UserRole.CUSTOMER:
         q = q.filter(Claim.customer_id == current_user.id)
 
-    claims = q.order_by(Claim.id.desc()).all()
+    claims = q.order_by(Claim.id.asc()).all()
 
     out_list = []
     for c in claims:

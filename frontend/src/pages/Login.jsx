@@ -1,113 +1,92 @@
-import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
-  Box, Card, CardContent, Typography, TextField, Button, Alert,
-  Dialog, DialogTitle, DialogContent, DialogActions, Stepper, Step, StepLabel,
-  InputAdornment, IconButton, CircularProgress
+  Box,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+  CircularProgress,
+  InputAdornment,
+  IconButton,
+  Divider,
+  Chip,
+  Stack
 } from '@mui/material';
-import SecurityIcon from '@mui/icons-material/Security';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import KeyIcon from '@mui/icons-material/Key';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import SecurityIcon from '@mui/icons-material/Security';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import PersonIcon from '@mui/icons-material/Person';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import { useAuth } from '../context/AuthContext';
 
-import { AuthContext } from '../context/AuthContext';
-import api from '../services/api';
+const PRESET_CREDENTIALS = [
+  { role: 'Admin', email: 'admin@insurance.com', pass: 'Admin@123', icon: <AdminPanelSettingsIcon fontSize="small" /> },
+  { role: 'Customer', email: 'customer@insurance.com', pass: 'Customer@123', icon: <PersonIcon fontSize="small" /> },
+  { role: 'Claims Officer', email: 'officer@insurance.com', pass: 'Officer@123', icon: <FactCheckIcon fontSize="small" /> },
+  { role: 'Agent', email: 'agent@insurance.com', pass: 'Agent@123', icon: <SupportAgentIcon fontSize="small" /> },
+];
 
 const Login = () => {
-  const { loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
-  const [email, setEmail] = useState('agent@insure.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Forgot password OTP modal state
-  const [forgotOpen, setForgotOpen] = useState(false);
-  const [activeStep, setActiveStep] = useState(0);
-  const [forgotEmail, setForgotEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [forgotMsg, setForgotMsg] = useState({ type: '', text: '' });
-  const [forgotLoading, setForgotLoading] = useState(false);
+  const handleSelectPreset = (presetEmail, presetPass) => {
+    setEmail(presetEmail);
+    setPassword(presetPass);
+    setError('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!email.trim() || !password) {
+      setError('Please provide both email and password.');
+      return;
+    }
+
     setLoading(true);
-
-    const res = await loginUser(email, password);
-    setLoading(false);
-
-    if (res.success) {
-      navigate('/dashboard');
-    } else {
-      setError(res.message);
-    }
-  };
-
-  const handleSendOTP = async () => {
-    if (!forgotEmail) {
-      setForgotMsg({ type: 'error', text: 'Please enter your registered email' });
-      return;
-    }
-    setForgotLoading(true);
-    setForgotMsg({ type: '', text: '' });
     try {
-      const res = await api.post('/auth/send-otp', { email: forgotEmail, purpose: 'FORGOT_PASSWORD' });
-      setForgotMsg({ type: 'success', text: `OTP sent! (Demo Code: ${res.data.demo_otp})` });
-      setActiveStep(1);
+      const loggedUser = await login(email.trim(), password);
+      const fromPath = location.state?.from?.pathname;
+      if (loggedUser.role === 'ADMIN') {
+        const target = (fromPath && fromPath.startsWith('/admin')) ? fromPath : '/admin/dashboard';
+        navigate(target, { replace: true });
+      } else if (loggedUser.role === 'CUSTOMER') {
+        const target = (fromPath && fromPath.startsWith('/customer')) ? fromPath : '/customer/dashboard';
+        navigate(target, { replace: true });
+      } else if (loggedUser.role === 'CLAIMS_OFFICER') {
+        const target = (fromPath && fromPath.startsWith('/officer')) ? fromPath : '/officer/dashboard';
+        navigate(target, { replace: true });
+      } else if (loggedUser.role === 'AGENT') {
+        const target = (fromPath && fromPath.startsWith('/agent')) ? fromPath : '/agent/dashboard';
+        navigate(target, { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
     } catch (err) {
-      setForgotMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to send OTP' });
+      console.error('Login error:', err);
+      setError(
+        err.response?.data?.detail ||
+          err.message ||
+          'Failed to sign in. Please verify your credentials.'
+      );
     } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (!otpCode) {
-      setForgotMsg({ type: 'error', text: 'Please enter 6-digit OTP code' });
-      return;
-    }
-    setForgotLoading(true);
-    setForgotMsg({ type: '', text: '' });
-    try {
-      await api.post('/auth/verify-otp', { email: forgotEmail, otp: otpCode, purpose: 'FORGOT_PASSWORD' });
-      setForgotMsg({ type: 'success', text: 'OTP Verified! Enter your new password.' });
-      setActiveStep(2);
-    } catch (err) {
-      setForgotMsg({ type: 'error', text: err.response?.data?.detail || 'Invalid OTP code' });
-    } finally {
-      setForgotLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      setForgotMsg({ type: 'error', text: 'Password must be at least 6 characters' });
-      return;
-    }
-    setForgotLoading(true);
-    setForgotMsg({ type: '', text: '' });
-    try {
-      await api.post('/auth/reset-password', {
-        email: forgotEmail,
-        otp: otpCode,
-        new_password: newPassword
-      });
-      setForgotMsg({ type: 'success', text: 'Password reset successful! You can now log in.' });
-      setTimeout(() => {
-        setForgotOpen(false);
-        setActiveStep(0);
-        setPassword(newPassword);
-      }, 1500);
-    } catch (err) {
-      setForgotMsg({ type: 'error', text: err.response?.data?.detail || 'Failed to reset password' });
-    } finally {
-      setForgotLoading(false);
+      setLoading(false);
     }
   };
 
@@ -118,191 +97,186 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(180deg, #ffffff 0%, #edf5ff 45%, #e1effc 100%)',
-        p: 2,
+        background: 'linear-gradient(135deg, #002970 0%, #001848 100%)',
+        p: 2.5,
       }}
     >
-      <Card sx={{ maxWidth: 440, width: '100%', borderRadius: 3, boxShadow: '0 12px 40px rgba(0, 41, 112, 0.12)' }}>
-        <CardContent sx={{ p: 4 }}>
-          {/* Header */}
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
+      <Card
+        sx={{
+          width: '100%',
+          maxWidth: 460,
+          borderRadius: 3.5,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.45)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: '#ffffff',
+          overflow: 'hidden',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, sm: 4.5 } }}>
+          {/* Brand Header */}
+          <Box sx={{ textAlign: 'center', mb: 3.5 }}>
             <Box
               sx={{
-                width: 52,
-                height: 52,
+                width: 56,
+                height: 56,
                 borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ff5a00 0%, #d94b00 100%)',
-                display: 'flex',
+                bgcolor: '#ff5a00',
+                color: '#ffffff',
+                display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                margin: '0 auto',
                 mb: 1.5,
-                boxShadow: '0 4px 14px rgba(255,90,0,0.3)',
+                boxShadow: '0 4px 14px rgba(255, 90, 0, 0.4)',
               }}
             >
-              <SecurityIcon sx={{ fontSize: 30 }} />
+              <SecurityIcon sx={{ fontSize: 32 }} />
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: '#002970' }}>
+            <Typography variant="h5" fontWeight="900" sx={{ color: '#002970', letterSpacing: '-0.5px' }}>
               Insurcare<span style={{ color: '#ff5a00' }}>.pro</span>
             </Typography>
-            <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5, fontWeight: 500 }}>
-              Insurance Agent & Client Portal Sign-In
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, fontWeight: 500 }}>
+              Insurance Policy & Claims Management System
             </Typography>
           </Box>
 
-          {error && <Alert severity="error" sx={{ mb: 2.5, borderRadius: 2 }}>{error}</Alert>}
+          {/* Quick Demo Login Presets */}
+          <Box sx={{ mb: 3, p: 2, bgcolor: '#f8fafc', borderRadius: 2.5, border: '1px solid #e2e8f0' }}>
+            <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ mb: 1, display: 'block', letterSpacing: 0.5 }}>
+              DEMO QUICK LOGIN PRESETS
+            </Typography>
+            <Stack direction="row" flexWrap="wrap" gap={1}>
+              {PRESET_CREDENTIALS.map((item) => (
+                <Chip
+                  key={item.role}
+                  icon={item.icon}
+                  label={item.role}
+                  size="small"
+                  onClick={() => handleSelectPreset(item.email, item.pass)}
+                  sx={{
+                    bgcolor: email === item.email ? '#002970' : '#ffffff',
+                    color: email === item.email ? '#ffffff' : '#334155',
+                    borderColor: '#cbd5e1',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    '& .MuiChip-icon': {
+                      color: email === item.email ? '#ff5a00' : '#64748b'
+                    },
+                    '&:hover': {
+                      bgcolor: '#ff5a00',
+                      color: '#ffffff',
+                      '& .MuiChip-icon': { color: '#ffffff' }
+                    }
+                  }}
+                  variant={email === item.email ? 'filled' : 'outlined'}
+                />
+              ))}
+            </Stack>
+          </Box>
 
+          {error && (
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          {/* Form */}
           <form onSubmit={handleSubmit}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <Box sx={{ mb: 2.5 }}>
+              <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                EMAIL ADDRESS
+              </Typography>
               <TextField
-                label="Email Address"
-                variant="outlined"
                 fullWidth
+                placeholder="Enter your email address"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                autoComplete="email"
                 required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailOutlinedIcon sx={{ color: '#002970' }} />
+                      <EmailOutlinedIcon fontSize="small" sx={{ color: '#ff5a00' }} />
                     </InputAdornment>
                   ),
                 }}
               />
+            </Box>
 
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                PASSWORD
+              </Typography>
               <TextField
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                variant="outlined"
                 fullWidth
+                placeholder="Enter your password"
+                type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                autoComplete="current-password"
                 required
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockOutlinedIcon sx={{ color: '#002970' }} />
+                      <LockOutlinedIcon fontSize="small" sx={{ color: '#ff5a00' }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        size="small"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
               />
-
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography
-                  variant="caption"
-                  sx={{ color: '#00a896', fontWeight: 600, cursor: 'pointer' }}
-                  onClick={() => setEmail('agent@insure.com')}
-                >
-                  Use Agent Demo Credentials
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ color: '#ff5a00', fontWeight: 700, cursor: 'pointer' }}
-                  onClick={() => setForgotOpen(true)}
-                >
-                  Forgot Password?
-                </Typography>
-              </Box>
-
-              <Button
-                type="submit"
-                variant="contained"
-                color="secondary"
-                size="large"
-                fullWidth
-                disabled={loading}
-                sx={{ py: 1.4, fontSize: '1rem', fontWeight: 700 }}
-              >
-                {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In to Agent Portal'}
-              </Button>
             </Box>
+
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              size="large"
+              disabled={loading}
+              sx={{
+                py: 1.4,
+                fontSize: '0.95rem',
+                fontWeight: 800,
+                borderRadius: 2.5,
+                textTransform: 'none',
+                bgcolor: '#ff5a00',
+                color: '#ffffff',
+                boxShadow: '0 4px 14px rgba(255, 90, 0, 0.4)',
+                '&:hover': {
+                  bgcolor: '#e04f00',
+                  boxShadow: '0 6px 18px rgba(255, 90, 0, 0.5)',
+                },
+              }}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+            </Button>
           </form>
 
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" color="textSecondary">
-              Don't have an account?{' '}
-              <Link to="/register" style={{ color: '#ff5a00', fontWeight: 700, textDecoration: 'none' }}>
-                Create Account
+          <Divider sx={{ my: 3 }} />
+
+          {/* Customer Registration Link */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">
+              New policyholder?{' '}
+              <Link to="/register" style={{ color: '#ff5a00', textDecoration: 'none', fontWeight: 700 }}>
+                Register for an Account
               </Link>
             </Typography>
           </Box>
         </CardContent>
       </Card>
-
-      {/* Forgot Password OTP Modal */}
-      <Dialog open={forgotOpen} onClose={() => setForgotOpen(false)} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: '#002970' }}>Reset Password with Email OTP</DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 3 }}>
-            <Step><StepLabel>Email</StepLabel></Step>
-            <Step><StepLabel>OTP</StepLabel></Step>
-            <Step><StepLabel>New Password</StepLabel></Step>
-          </Stepper>
-
-          {forgotMsg.text && (
-            <Alert severity={forgotMsg.type || 'info'} sx={{ mb: 2 }}>
-              {forgotMsg.text}
-            </Alert>
-          )}
-
-          {activeStep === 0 && (
-            <TextField
-              label="Registered Email Address"
-              fullWidth
-              value={forgotEmail}
-              onChange={(e) => setForgotEmail(e.target.value)}
-              placeholder="agent@insure.com"
-            />
-          )}
-
-          {activeStep === 1 && (
-            <TextField
-              label="Enter 6-Digit OTP Code"
-              fullWidth
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value)}
-              placeholder="123456"
-            />
-          )}
-
-          {activeStep === 2 && (
-            <TextField
-              label="New Password"
-              type="password"
-              fullWidth
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setForgotOpen(false)} color="inherit">Cancel</Button>
-          {activeStep === 0 && (
-            <Button onClick={handleSendOTP} variant="contained" color="secondary" disabled={forgotLoading}>
-              Send Verification Code
-            </Button>
-          )}
-          {activeStep === 1 && (
-            <Button onClick={handleVerifyOTP} variant="contained" color="secondary" disabled={forgotLoading}>
-              Verify Code
-            </Button>
-          )}
-          {activeStep === 2 && (
-            <Button onClick={handleResetPassword} variant="contained" color="secondary" disabled={forgotLoading}>
-              Update Password
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

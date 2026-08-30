@@ -1,142 +1,170 @@
-# InsurCare- Insurance Policy & Claims Management System
+# InsurCare - Insurance Policy & Claims Management System
 
-A production-ready, full-stack **Insurance Policy & Claims Management System** inspired by InsurCare (~70% visual identity & UX match), developed as a **Group Project by Team Antigravity**.
+A production-ready, full-stack **Enterprise Insurance Policy & Claims Management Platform** built with **FastAPI**, **React (Vite)**, and **Material UI (MUI v5)**. Designed with a modern, high-conversion visual identity inspired by **InsurCare** (~70% visual match).
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Backend-FastAPI-009688.svg)
 ![React](https://img.shields.io/badge/Frontend-ReactJS_Vite-61DAFB.svg)
 ![MUI](https://img.shields.io/badge/UI-Material_UI_v5-007FFF.svg)
+![Architecture](https://img.shields.io/badge/Architecture-Role--Based_Decoupled-orange.svg)
 
 ---
 
-## 👥 Group Project & Team Collaboration Architecture
+## 🌟 System Architecture & Portals
 
-This repository forms the core foundation of a multi-module enterprise insurance suite built by **Team Antigravity**. The application architecture has been decoupled to guarantee **zero integration barriers and zero module conflicts** when incorporating modules developed by fellow team members.
+The platform is structured into four decoupled, role-guarded enterprise portals sharing a unified design language, centralized database schema, and RESTful API backend:
 
-### 🧩 Teammate Module Integration Support
+```
+                                  ┌──────────────────────────────┐
+                                  │   InsurCare Unified Portal   │
+                                  └──────────────┬───────────────┘
+                                                 │
+          ┌───────────────────────┬──────────────┴──────────────┬─────────────────────────┐
+          │                       │                             │                         │
+┌─────────▼───────────┐ ┌─────────▼───────────┐ ┌───────────────▼───────────┐ ┌───────────▼───────────┐
+│   🛡️ Admin Portal   │ │  👤 Customer Portal │ │ ⚖️ Claims Officer Portal │ │ 💼 Agent Portal       │
+│      (/admin)       │ │     (/customer)     │ │        (/officer)         │ │       (/agent)        │
+└─────────────────────┘ └─────────────────────┘ └───────────────────────────┘ └───────────────────────┘
+```
 
-Our modular router, role-guard, and component layout structure seamlessly supports plug-and-play integration for the following teammate modules:
+### 1. 🛡️ **Admin Portal (`/admin/*`)**
+- **User & Role Administration**: Full CRUD lifecycle management for Admins, Agents, Officers, and Customers with account status toggling (`Active` / `Inactive`) and self-modification security guards.
+- **Insurance Policy Configuration**: Catalog plan creation, coverage limits, terms, premium pricing tiers, and category management.
+- **Agent & Claims Officer Onboarding**: Dedicated onboarding portals, credential provisioning, and performance tracking.
+- **Claims Desk & Adjudication Oversight**: Global claims visibility, officer reassignments, payout oversight, and document verification.
+- **Executive Analytics & Audit Logs**: Revenue breakdown reports, policy distribution charts, claim settlement analytics, and tamper-resistant security audit logs.
 
-1. **Admin Module**: Dedicated administrative control panel, global system settings, agent onboarding, and audit log monitoring.
-2. **Customer Module**: Self-service client portal for direct policy browsing, payment gateway checkouts, document uploads, and policy management.
-3. **Claims Officer Module**: Specialized adjudication dashboard for insurance claims adjusters, investigation management, and payout approvals.
+### 2. 👤 **Customer Portal (`/customer/*`)**
+- **Self-Service Dashboard**: Real-time overview of active policies, pending claim statuses, renewal deadlines, and notification alerts.
+- **Plan Catalog & Instant Purchase**: Interactive policy browser with dynamic category filtering, detailed coverage breakdowns, and 1-click plan subscription checkout.
+- **My Policies Portfolio**: Active policy coverage manager with digital policy terms inspection and **1-click A4 Policy Guarantee Certificate PDF** download.
+- **Claims Filing Desk**: Guided multi-step claim filing with incident details, loss date, requested amounts, and supporting document file uploads.
+- **Real-Time Claims Tracking**: Visual timeline tracking claim progression (`Submitted` ➔ `Under Review` ➔ `Approved / Rejected` ➔ `Paid`).
 
-Each teammate module can be connected directly via independent API routers and React route boundaries without affecting existing agent portal workflows or causing merge conflicts.
+### 3. ⚖️ **Claims Officer Portal (`/officer/*`)**
+- **Adjudication Dashboard**: Key metrics on pending reviews, assigned queues, approval percentages, and flagged cases.
+- **Claim Review Workspace**: In-depth claim review interface featuring incident details, attached evidentiary documents preview, and an automated risk engine (*Low Risk*, *Moderate*, *High Risk*).
+- **Decision Engine**: Formal adjudication workflow with approved settlement amount inputs, rejection reasoning, adjuster remarks, and audit trail generation.
+- **Review History**: Historical catalog and audit logs of all processed claims.
+
+### 4. 💼 **Insurance Agent Portal (`/agent/*`)**
+- **Agent Operations Dashboard**: KPI metrics on active customer policies, total premiums collected (₹), and dual-axis **Recharts** sales performance across categories (*Health*, *Auto*, *Life*, *Home*).
+- **Client Policy Issuance**: Issue plans to verified customers with dynamic customer auto-completion.
+- **Customer Policy Management**: Filterable portfolio table with status chips (`ACTIVE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`).
+- **Renewal Notifications**: 1-click branded HTML Email & SMS renewal reminders updating audit timestamps.
+- **Agent Profile Management**: Real-time profile editing and display picture management.
 
 ---
 
-## 🌿 Team Git Collaboration Workflow (Option 1: Feature Branches)
+## 🎨 Visual System & Branding (InsurCare Identity)
 
-Our team uses **Direct Collaborators + Dedicated Feature Branches** for developing and integrating individual modules cleanly.
+- **Brand Palette**: Signature Vibrant Orange (`#ff5a00`), Corporate Navy (`#002970`), Coverage Accent Teal (`#00a896`), and Soft Ice Blue background gradient (`#edf5ff`).
+- **Glassmorphic Navigation**: Top glassmorphic header bar with quick-switch notification popovers, dynamic role badges, and an animated drawer navigation menu.
+- **Data Visualization**: Rich interactive charts powered by **Recharts** (Distribution Pie Charts, Category Revenue Bar Charts).
+- **PDF Guarantee Generation**: Client-side official Policy Guarantee Certificates generated via **jsPDF** & **AutoTable**.
 
-### 1. Clone the Main Repository
+---
+
+## 🛠️ Tech Stack
+
+### **Frontend**
+- **Framework**: React.js 18 (Vite)
+- **UI Component Library**: Material UI (MUI v5)
+- **Icons**: MUI Icons Material
+- **Data Visualization**: Recharts (Pie, Bar & Area charts)
+- **PDF Generation**: jsPDF & jsPDF-AutoTable
+- **Routing**: React Router v6 (Role-Based Protected Routes)
+- **HTTP Client**: Axios with automatic JWT interceptors
+
+### **Backend**
+- **Framework**: Python 3.12+ / FastAPI
+- **Database ORM**: SQLAlchemy 2.0
+- **Data Validation & Schemas**: Pydantic v2
+- **Authentication**: JWT (JSON Web Tokens) with Passlib & Bcrypt password hashing
+- **Database Engine**: SQLite (Default development) / PostgreSQL compatible
+- **Testing**: Pytest
+
+---
+
+## 🚀 Getting Started Locally
+
+### Prerequisites
+- **Python 3.10+**
+- **Node.js 18+ & npm**
+- **Git**
+
+---
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/harshithcheripally16-ui/Insurance-Policy-Claims-Management.git
 cd Insurance-Policy-Claims-Management
 ```
 
-### 2. Create Your Module Feature Branch
-
-Each teammate creates a separate branch for their module:
-
-- **Admin Module**: `git checkout -b feature/admin-module`
-- **Customer Module**: `git checkout -b feature/customer-module`
-- **Claims Officer Module**: `git checkout -b feature/claims-officer-module`
-
-### 3. Commit & Push Your Module Branch
-
-```bash
-git add .
-git commit -m "Add [Module Name] capabilities"
-git push origin feature/[module-name]
-```
-
-### 4. Open a Pull Request (PR)
-
-- Go to the GitHub repository: `https://github.com/harshithcheripally16-ui/Insurance-Policy-Claims-Management`
-- Click **Compare & Pull Request** to request merging your feature branch into `main`.
-- Once reviewed, click **Merge Pull Request**.
-
 ---
 
-## 🌟 Key System Capabilities
-
-### 🏢 InsurCare Visual System Identity (~70% Match)
-
-- **Brand Palette**: Signature Vibrant Orange (`#ff5a00`), Corporate Navy (`#002970`), Coverage Accent Teal (`#00a896`), and Soft Ice Blue background gradient (`#edf5ff`).
-- **Glassmorphic Navigation**: Top glassmorphic header bar with a hamburger toggle button positioned immediately to the left of the brand logo, launching an animated sliding Drawer navigation menu.
-- **Plain Insurance Terminology**: Avoids developer jargon; uses clear terms like _Insurance Plans_, _Policy Coverages_, and _Client Accounts_.
-
-### 📸 Agent Profile & Picture Management
-
-- **Instagram-Style Profile Upload**: Interactive profile picture editing interface inside the Agent Profile modal, featuring a camera overlay button that allows agents to update their display image in real time.
-- **Editable Profile Details**: In-card editing for Agent Name, Email Address, and Contact Phone Number.
-
-### 📊 Agent Operations & Dashboard (`/dashboard`)
-
-- **Hero Welcome Banner**: Personalized operations overview for Agent Priya Nair (Verified Insurance Agent).
-- **KPI Stat Cards**: Total Client Policies, Active Policies, Total Premiums Collected (₹), Client Accounts.
-- **Category Sales Performance Chart**: Interactive dual-axis **Recharts** visualization tracking premium revenues collected (₹) and policies issued across _Health_, _Auto_, _Life_, and _Home_.
-
-### 📜 Insurance Plans Catalog (`/policies/catalog`)
-
-- Dedicated catalog grid featuring **BESTSELLER** badges, pricing cards, coverage limit badges, and feature checklists.
-- **Issue Policy to Customer Modal**: Customer select dropdown displaying **ONLY Customer Full Names** (strictly hiding email addresses for agent privacy and focus).
-
-### 📑 Customer Policies Portfolio (`/policies`)
-
-- Active customer policy coverages table with status chips (`ACTIVE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`).
-- **Advanced Multi-Filter Bar**: Search Query (Policy #, Title, Customer), Category, Status, Valid Dates (_Valid From_ / _Valid Until_), and Reset.
-- **1-Click SMTP Email Renewal Reminder**: Sends branded HTML renewal email + updates "Last Reminder Sent" audit timestamp + in-app notice.
-- **1-Click Phone SMS Renewal Reminder**: Sends SMS renewal notice + updates "Last Reminder Sent" audit timestamp + in-app notice.
-- **1-Click PDF Policy Guarantee Certificate**: Downloads official A4 Policy Guarantee Certificate PDF with digital agent seal.
-
-### 👥 Customer Directory (`/users`)
-
-- Verified client accounts directory (`role = CUSTOMER`).
-- **Sequential Auto-Reindexed ID Column**: Customer display IDs renumbered dynamically starting from 1 (`1, 2, 3, ...`) with zero gaps.
-
-### ⚠️ Claims Desk & Risk Engine (`/claims`)
-
-- Claim filing modal and automated risk scoring engine (`risk_engine`).
-- Color-coded risk badges (_LOW RISK_, _MODERATE_, _HIGH RISK_) based on coverage ratio, incident timing, and claim history.
-
----
-
-## ⚡ Local Execution Instructions
-
-### 1. Backend Server Setup (Port 8000)
+### 2. Backend Setup (FastAPI)
 
 ```bash
-python -m pip install -r requirements.txt
+# Navigate to the backend directory
+cd backend
+
+# (Optional) Create & activate a virtual environment
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI server on http://127.0.0.1:8000
 python run.py
 ```
 
-> API interactive documentation available at: `http://127.0.0.1:8000/docs`
-
-### 2. Frontend Server Setup (Port 3000)
-
-```bash
-npm install
-npm run dev
-```
-
-> Web Application available at: `http://127.0.0.1:3000`
+> 📄 **Interactive API Docs (Swagger UI)**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
+> 📄 **Alternative API Docs (ReDoc)**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
 
 ---
 
-## 🔑 Default Credentials
+### 3. Frontend Setup (React + Vite)
 
-- **Role**: Verified Insurance Agent
-- **Email**: `agent@insure.com`
-- **Password**: `password123`
+```bash
+# Open a new terminal and navigate to the frontend directory
+cd frontend
+
+# Install Node modules
+npm install
+
+# Start the Vite development server on http://127.0.0.1:3000
+npm run dev
+```
+
+> 🌐 **Web Portal**: [http://127.0.0.1:3000](http://127.0.0.1:3000)
+
+---
+
+## 🔑 Demo Login Credentials
+
+You can use the 1-click **Quick Login Chips** on the `/login` page or enter the credentials below:
+
+| Role | Email | Password | Access Scope |
+| :--- | :--- | :--- | :--- |
+| 🛡️ **Admin** | `admin@insurance.com` | `Admin@123` | Full System Management, Users, Policies, Claims & Reports |
+| 👤 **Customer** | `customer@insurance.com` | `Customer@123` | Self-Service Policy Subscriptions, Document Uploads & Claims |
+| ⚖️ **Claims Officer** | `officer@insurance.com` | `Officer@123` | Claims Review, Risk Scoring & Payout Approvals |
+| 💼 **Insurance Agent** | `agent@insurance.com` | `Agent@123` | Client Portfolios, Policy Issuance & Renewal Reminders |
 
 ---
 
 ## 🧪 Automated Testing
 
+Run the automated backend test suite using `pytest`:
+
 ```bash
+cd backend
 python -m pytest
 ```
 
@@ -144,4 +172,4 @@ python -m pytest
 
 ## 📜 License
 
-Distributed under the MIT License.
+This project is licensed under the MIT License.

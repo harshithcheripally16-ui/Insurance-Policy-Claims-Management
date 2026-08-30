@@ -66,3 +66,52 @@ def test_get_policies_filter():
     assert isinstance(policies, list)
     for p in policies:
         assert p["category"] == "Health"
+
+def test_otp_forgot_password_flow():
+    from app.database import SessionLocal
+    from app.models import OTPRecord
+
+    # 1. Send OTP for forgot password
+    send_res = client.post("/api/auth/send-otp", json={
+        "email": "customer@insurance.com",
+        "purpose": "FORGOT_PASSWORD"
+    })
+    assert send_res.status_code == 200
+    assert send_res.json()["status"] == "success"
+
+    # 2. Retrieve generated OTP from DB for testing
+    db = SessionLocal()
+    otp_record = db.query(OTPRecord).filter(
+        OTPRecord.email == "customer@insurance.com",
+        OTPRecord.purpose == "FORGOT_PASSWORD"
+    ).first()
+    assert otp_record is not None
+    otp_code = otp_record.otp_code
+    db.close()
+
+    # 3. Verify OTP
+    verify_res = client.post("/api/auth/verify-otp", json={
+        "email": "customer@insurance.com",
+        "otp": otp_code,
+        "purpose": "FORGOT_PASSWORD"
+    })
+    assert verify_res.status_code == 200
+    assert verify_res.json()["status"] == "success"
+
+    # 4. Reset Password
+    reset_res = client.post("/api/auth/reset-password", json={
+        "email": "customer@insurance.com",
+        "otp": otp_code,
+        "new_password": "NewCustomerPassword@123"
+    })
+    assert reset_res.status_code == 200
+    assert reset_res.json()["status"] == "success"
+
+    # 5. Login with New Password
+    login_new = client.post("/api/auth/login", json={
+        "email": "customer@insurance.com",
+        "password": "NewCustomerPassword@123"
+    })
+    assert login_new.status_code == 200
+    assert "access_token" in login_new.json()
+

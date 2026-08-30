@@ -21,8 +21,23 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
-  getCurrentUser() {
-    return JSON.parse(localStorage.getItem('user'));
+  sendOtp: async (email, purpose = 'FORGOT_PASSWORD') => {
+    const response = await api.post('/auth/send-otp', { email, purpose });
+    return response.data;
+  },
+
+  verifyOtp: async (email, otp, purpose = 'FORGOT_PASSWORD') => {
+    const response = await api.post('/auth/verify-otp', { email, otp, purpose });
+    return response.data;
+  },
+
+  resetPassword: async (email, otp, newPassword) => {
+    const response = await api.post('/auth/reset-password', {
+      email,
+      otp,
+      new_password: newPassword,
+    });
+    return response.data;
   },
 };
 

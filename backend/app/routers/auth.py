@@ -2,7 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
-from app.schemas import LoginRequest, TokenResponse, UserOut, CustomerRegisterRequest
+from app.schemas import (
+    LoginRequest,
+    TokenResponse,
+    UserOut,
+    CustomerRegisterRequest,
+    SendOTPRequest,
+    VerifyOTPRequest,
+    PasswordResetRequest
+)
 from app.dependencies import verify_password, get_password_hash as hash_password, create_access_token
 from app.dependencies import get_current_user, log_audit_action, create_notification
 
@@ -104,4 +112,139 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def get_current_user_profile(current_user: User = Depends(get_current_user)):
     return UserOut.model_validate(current_user)
+
+@router.post("/send-otp")
+def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
+    import random
+    from datetime import datetime, timedelta
+    from app.models import OTPRecord
+    from app.services.smtp_service import send_otp_email
+
+    email_clean = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == email_clean).first()
+    
+    if payload.purpose == "FORGOT_PASSWORD" and not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account registered with this email address."
+        )
+
+    # Generate 6-digit OTP
+    otp_code = f"{random.randint(100000, 999999)}"
+    expires_at = datetime.utcnow() + timedelta(minutes=10)
+
+    # Clear old OTPs for this email & purpose
+    db.query(OTPRecord).filter(
+        OTPRecord.email == email_clean,
+        OTPRecord.purpose == payload.purpose
+    ).delete()
+
+    otp_entry = OTPRecord(
+        email=email_clean,
+        otp_code=otp_code,
+        purpose=payload.purpose,
+        expires_at=expires_at
+    )
+    db.add(otp_entry)
+    db.commit()
+
+    # Send Live Branded HTML Email via SMTP
+    email_sent = send_otp_email(
+        to_email=email_clean,
+        otp_code=otp_code,
+        purpose=payload.purpose
+    )
+
+    return {
+        "status": "success",
+        "message": f"Verification code sent to {email_clean}",
+        "email_sent": email_sent
+    }
+
+@router.post("/verify-otp")
+def verify_otp(payload: VerifyOTPRequest, db: Session = Depends(get_db)):
+    from datetime import datetime
+    from app.models import OTPRecord
+
+    email_clean = payload.email.lower().strip()
+    otp_clean = payload.otp.strip()
+
+    record = db.query(OTPRecord).filter(
+        OTPRecord.email == email_clean,
+        OTPRecord.otp_code == otp_clean,
+        OTPRecord.purpose == payload.purpose
+    ).first()
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid OTP code. Please check your email and try again."
+        )
+
+    if record.expires_at < datetime.utcnow():
+        db.delete(record)
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP code has expired. Please request a new one."
+        )
+
+    return {
+        "status": "success",
+        "message": "OTP verified successfully."
+    }
+
+@router.post("/reset-password")
+def reset_password(payload: PasswordResetRequest, db: Session = Depends(get_db)):
+    from datetime import datetime
+    from app.models import OTPRecord
+
+    email_clean = payload.email.lower().strip()
+    otp_clean = payload.otp.strip()
+
+    record = db.query(OTPRecord).filter(
+        OTPRecord.email == email_clean,
+        OTPRecord.otp_code == otp_clean,
+        OTPRecord.purpose == "FORGOT_PASSWORD"
+    ).first()
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired OTP code."
+        )
+
+    if record.expires_at < datetime.utcnow():
+        db.delete(record)
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="OTP code has expired. Please request a new one."
+        )
+
+    user = db.query(User).filter(User.email == email_clean).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found."
+        )
+
+    user.password_hash = hash_password(payload.new_password)
+    db.delete(record)
+    db.commit()
+
+    # Log Audit Action
+    log_audit_action(
+        db=db,
+        admin_id=user.id if user.role == "ADMIN" else None,
+        action="PASSWORD_RESET_VIA_OTP",
+        target_type="USER",
+        target_id=str(user.id),
+        details=f"User {user.name} ({user.email}) successfully reset password using Email OTP verification."
+    )
+
+    return {
+        "status": "success",
+        "message": "Password has been successfully updated. You can now log in."
+    }
 

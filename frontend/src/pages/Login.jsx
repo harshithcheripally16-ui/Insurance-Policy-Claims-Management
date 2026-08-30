@@ -25,6 +25,13 @@ import PersonIcon from '@mui/icons-material/Person';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import FactCheckIcon from '@mui/icons-material/FactCheck';
 import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import KeyIcon from '@mui/icons-material/Key';
+import MarkEmailReadIcon from '@mui/icons-material/MarkEmailRead';
 
 const PRESET_CREDENTIALS = [
   { role: 'Admin', email: 'admin@insurance.com', pass: 'Admin@123', icon: <AdminPanelSettingsIcon fontSize="small" /> },
@@ -43,6 +50,93 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Forgot Password / OTP State
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1); // 1: Request OTP, 2: Verify & Reset
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPass, setForgotNewPass] = useState('');
+  const [forgotConfirmPass, setForgotConfirmPass] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  const [countdown, setCountdown] = useState(0);
+
+  const handleOpenForgot = () => {
+    setForgotEmail(email || '');
+    setForgotStep(1);
+    setForgotOtp('');
+    setForgotNewPass('');
+    setForgotConfirmPass('');
+    setForgotError('');
+    setForgotSuccess('');
+    setForgotOpen(true);
+  };
+
+  const handleSendForgotOtp = async () => {
+    if (!forgotEmail.trim()) {
+      setForgotError('Please enter your registered email address.');
+      return;
+    }
+    setForgotLoading(true);
+    setForgotError('');
+    setForgotSuccess('');
+    try {
+      await authService.sendOtp(forgotEmail.trim(), 'FORGOT_PASSWORD');
+      setForgotSuccess(`A 6-digit verification code has been dispatched to ${forgotEmail.trim()}`);
+      setForgotStep(2);
+      setCountdown(60);
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (err) {
+      setForgotError(err.response?.data?.detail || 'Failed to send OTP email. Please check your email.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!forgotOtp.trim()) {
+      setForgotError('Please enter the 6-digit verification code.');
+      return;
+    }
+    if (forgotOtp.trim().length !== 6) {
+      setForgotError('Verification code must be exactly 6 digits.');
+      return;
+    }
+    if (!forgotNewPass || forgotNewPass.length < 6) {
+      setForgotError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (forgotNewPass !== forgotConfirmPass) {
+      setForgotError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setForgotLoading(true);
+    setForgotError('');
+    try {
+      await authService.resetPassword(forgotEmail.trim(), forgotOtp.trim(), forgotNewPass);
+      setForgotSuccess('Your password has been successfully reset! You can now sign in.');
+      setEmail(forgotEmail.trim());
+      setPassword('');
+      setTimeout(() => {
+        setForgotOpen(false);
+      }, 2000);
+    } catch (err) {
+      setForgotError(err.response?.data?.detail || 'Invalid or expired OTP. Please try again.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const handleSelectPreset = (presetEmail, presetPass) => {
     setEmail(presetEmail);
@@ -204,10 +298,28 @@ const Login = () => {
               />
             </Box>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="caption" fontWeight="700" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
-                PASSWORD
-              </Typography>
+            <Box sx={{ mb: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="caption" fontWeight="700" color="text.secondary">
+                  PASSWORD
+                </Typography>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={handleOpenForgot}
+                  sx={{
+                    p: 0,
+                    minWidth: 0,
+                    textTransform: 'none',
+                    fontWeight: 700,
+                    fontSize: '0.75rem',
+                    color: '#ff5a00',
+                    '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
+                  }}
+                >
+                  Forgot Password?
+                </Button>
+              </Box>
               <TextField
                 fullWidth
                 placeholder="Enter your password"
@@ -246,6 +358,7 @@ const Login = () => {
               size="large"
               disabled={loading}
               sx={{
+                mt: 2,
                 py: 1.4,
                 fontSize: '0.95rem',
                 fontWeight: 800,
@@ -277,8 +390,167 @@ const Login = () => {
           </Box>
         </CardContent>
       </Card>
+
+      {/* Forgot Password & Live SMTP OTP Dialog */}
+      <Dialog
+        open={forgotOpen}
+        onClose={() => !forgotLoading && setForgotOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1,
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800, color: '#002970', pb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ bgcolor: '#fff5f0', p: 1, borderRadius: '50%', color: '#ff5a00', display: 'flex' }}>
+            <KeyIcon />
+          </Box>
+          Reset Account Password
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ pt: 2 }}>
+          {forgotError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+              {forgotError}
+            </Alert>
+          )}
+
+          {forgotSuccess && (
+            <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
+              {forgotSuccess}
+            </Alert>
+          )}
+
+          {forgotStep === 1 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                Enter your account email address. We will send a secure <strong>6-digit verification code (OTP)</strong> via live SMTP to verify your identity.
+              </Typography>
+              <TextField
+                fullWidth
+                label="Registered Email Address"
+                placeholder="e.g. admin@insurance.com"
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                disabled={forgotLoading}
+                autoFocus
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <EmailOutlinedIcon fontSize="small" sx={{ color: '#ff5a00' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+              <Box sx={{ bgcolor: '#f0fdf9', p: 1.5, borderRadius: 2, border: '1px solid #00a896' }}>
+                <Typography variant="caption" color="#004d40" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <MarkEmailReadIcon fontSize="small" /> CODE DISPATCHED
+                </Typography>
+                <Typography variant="body2" color="#004d40" sx={{ mt: 0.5 }}>
+                  Please enter the 6-digit OTP code sent to <strong>{forgotEmail}</strong>
+                </Typography>
+              </Box>
+
+              <TextField
+                fullWidth
+                label="6-Digit Verification Code (OTP)"
+                placeholder="123456"
+                value={forgotOtp}
+                onChange={(e) => setForgotOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                disabled={forgotLoading}
+                autoFocus
+                inputProps={{ style: { fontSize: '1.25rem', letterSpacing: '4px', textAlign: 'center', fontWeight: 800 } }}
+              />
+
+              <TextField
+                fullWidth
+                label="New Password"
+                placeholder="Enter new strong password"
+                type="password"
+                value={forgotNewPass}
+                onChange={(e) => setForgotNewPass(e.target.value)}
+                disabled={forgotLoading}
+              />
+
+              <TextField
+                fullWidth
+                label="Confirm New Password"
+                placeholder="Re-enter new password"
+                type="password"
+                value={forgotConfirmPass}
+                onChange={(e) => setForgotConfirmPass(e.target.value)}
+                disabled={forgotLoading}
+              />
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+                <Typography variant="caption" color="text.secondary">
+                  {countdown > 0 ? `Resend OTP in ${countdown}s` : "Didn't receive code?"}
+                </Typography>
+                <Button
+                  size="small"
+                  variant="text"
+                  disabled={countdown > 0 || forgotLoading}
+                  onClick={handleSendForgotOtp}
+                  sx={{ textTransform: 'none', fontWeight: 700, color: '#ff5a00' }}
+                >
+                  Resend OTP
+                </Button>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setForgotOpen(false)}
+            disabled={forgotLoading}
+            sx={{ color: '#64748b', fontWeight: 600, textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+
+          {forgotStep === 1 ? (
+            <Button
+              variant="contained"
+              onClick={handleSendForgotOtp}
+              disabled={forgotLoading || !forgotEmail.trim()}
+              sx={{
+                bgcolor: '#ff5a00',
+                fontWeight: 700,
+                textTransform: 'none',
+                '&:hover': { bgcolor: '#e04f00' }
+              }}
+            >
+              {forgotLoading ? <CircularProgress size={20} color="inherit" /> : 'Send OTP Code'}
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleResetPassword}
+              disabled={forgotLoading || !forgotOtp.trim() || !forgotNewPass}
+              sx={{
+                bgcolor: '#002970',
+                fontWeight: 700,
+                textTransform: 'none',
+                '&:hover': { bgcolor: '#001848' }
+              }}
+            >
+              {forgotLoading ? <CircularProgress size={20} color="inherit" /> : 'Reset Password'}
+            </Button>
+          )}
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default Login;
+

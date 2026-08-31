@@ -27,21 +27,21 @@ The platform is structured into four decoupled, role-guarded enterprise portals 
 └─────────────────────┘ └─────────────────────┘ └───────────────────────────┘ └───────────────────────┘
 ```
 
-### 1. 🛡️ **Admin Portal (`/admin/*`)**
+### 1. 🛡️ **Admin Portal (`/admin/*`)** - **(Done by Balineni Yashwanth)**
 - **User & Role Administration**: Full CRUD lifecycle management for Admins, Agents, Officers, and Customers with account status toggling (`Active` / `Inactive`) and self-modification security guards.
 - **Insurance Policy Configuration**: Catalog plan creation, coverage limits, terms, premium pricing tiers, and category management.
 - **Agent & Claims Officer Onboarding**: Dedicated onboarding portals, credential provisioning, and performance tracking.
 - **Claims Desk & Adjudication Oversight**: Global claims visibility, officer reassignments, payout oversight, and document verification.
 - **Executive Analytics & Audit Logs**: Revenue breakdown reports, policy distribution charts, claim settlement analytics, and tamper-resistant security audit logs.
 
-### 2. 👤 **Customer Portal (`/customer/*`)**
+### 2. 👤 **Customer Portal (`/customer/*`)** - **(Done by Dheshik Sai)**
 - **Self-Service Dashboard**: Real-time overview of active policies, pending claim statuses, renewal deadlines, and notification alerts.
 - **Plan Catalog & Instant Purchase**: Interactive policy browser with dynamic category filtering, detailed coverage breakdowns, and 1-click plan subscription checkout.
 - **My Policies Portfolio**: Active policy coverage manager with digital policy terms inspection and **1-click A4 Policy Guarantee Certificate PDF** download.
 - **Claims Filing Desk**: Guided multi-step claim filing with incident details, loss date, requested amounts, and supporting document file uploads.
 - **Real-Time Claims Tracking**: Visual timeline tracking claim progression (`Submitted` ➔ `Under Review` ➔ `Approved / Rejected` ➔ `Paid`).
 
-### 3. ⚖️ **Claims Officer Portal (`/officer/*`)**
+### 3. ⚖️ **Claims Officer Portal (`/officer/*`)** - **(Done by Sameer Shaik)**
 - **Adjudication Dashboard**: Key metrics on pending reviews, assigned queues, approval percentages, and flagged cases.
 - **Claim Review Workspace**: In-depth claim review interface featuring incident details, attached evidentiary documents preview, and an automated risk engine (*Low Risk*, *Moderate*, *High Risk*).
 - **Decision Engine**: Formal adjudication workflow with approved settlement amount inputs, rejection reasoning, adjuster remarks, and audit trail generation.

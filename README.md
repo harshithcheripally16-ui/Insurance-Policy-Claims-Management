@@ -47,7 +47,7 @@ The platform is structured into four decoupled, role-guarded enterprise portals 
 - **Decision Engine**: Formal adjudication workflow with approved settlement amount inputs, rejection reasoning, adjuster remarks, and audit trail generation.
 - **Review History**: Historical catalog and audit logs of all processed claims.
 
-### 4. 💼 **Insurance Agent Portal (`/agent/*`)**
+### 4. 💼 **Insurance Agent Portal (`/agent/*`)** - **(Done by Harshith Cheripally)**
 - **Agent Operations Dashboard**: KPI metrics on active customer policies, total premiums collected (₹), and dual-axis **Recharts** sales performance across categories (*Health*, *Auto*, *Life*, *Home*).
 - **Client Policy Issuance**: Issue plans to verified customers with dynamic customer auto-completion.
 - **Customer Policy Management**: Filterable portfolio table with status chips (`ACTIVE`, `SUSPENDED`, `EXPIRED`, `CANCELLED`).

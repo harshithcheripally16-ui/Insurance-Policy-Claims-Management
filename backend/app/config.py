@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     
-    # Database
-    DATABASE_URL: str = "sqlite:///./insurance_app.db"
+    # Database - Absolute path to ensure write permissions under WSGI / PythonAnywhere
+    DATABASE_URL: str = f"sqlite:///{os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'insurance_app.db').replace(os.sep, '/')}"
     
     # SMTP Email Settings for Live OTP & Policy Renewal Notifications
     SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")

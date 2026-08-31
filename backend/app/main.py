@@ -99,6 +99,10 @@ app.include_router(users_router.router)
 
 @app.get("/")
 def root():
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    index_file = os.path.join(base_dir, "frontend", "dist", "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
     return {
         "status": "Online",
         "system": "InsurCare Insurance & Claims Management Engine",

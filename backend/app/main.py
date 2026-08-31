@@ -344,3 +344,30 @@ def seed_database():
         db.close()
 
 seed_database()
+
+# Production Frontend Hosting (e.g. PythonAnywhere / Docker / Cloud)
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+frontend_dist = os.path.join(base_dir, "frontend", "dist")
+assets_dir = os.path.join(frontend_dist, "assets")
+
+if os.path.exists(frontend_dist):
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa_frontend(full_path: str):
+        # Allow API routes to be handled by routers
+        if full_path.startswith("api/") or full_path == "docs" or full_path == "openapi.json":
+            return None
+        target = os.path.join(frontend_dist, full_path)
+        if os.path.exists(target) and os.path.isfile(target):
+            return FileResponse(target)
+        index_file = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        return {"status": "Frontend build not found", "hint": "Run npm run build in frontend directory"}
+

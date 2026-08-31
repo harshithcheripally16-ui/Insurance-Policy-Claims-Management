@@ -357,14 +357,55 @@ class PolicyOut(BaseModel):
 
 class PolicyUpdate(BaseModel):
     title: Optional[str] = None
-    category: Optional[PolicyCategory] = None
+    name: Optional[str] = None
+    category: Optional[Union[PolicyCategory, str]] = None
+    type: Optional[str] = None
     premium_amount: Optional[float] = None
+    base_premium: Optional[float] = None
+    premium: Optional[float] = None
     coverage_amount: Optional[float] = None
-    status: Optional[PolicyStatus] = None
+    description: Optional[str] = None
+    duration_months: Optional[int] = None
+    status: Optional[Union[PolicyStatus, str]] = None
     valid_until: Optional[datetime.datetime] = None
 
+class PolicyCatalogCreate(BaseModel):
+    policy_number: Optional[str] = None
+    name: Optional[str] = None
+    title: Optional[str] = None
+    type: Optional[str] = None
+    category: Optional[Union[PolicyCategory, str]] = None
+    description: Optional[str] = None
+    premium: Optional[float] = None
+    base_premium: Optional[float] = None
+    premium_amount: Optional[float] = None
+    coverage_amount: Optional[float] = None
+    duration_months: Optional[int] = 12
+    status: Optional[str] = "ACTIVE"
+    features: Optional[str] = None
+
+class PolicyCatalogUpdate(BaseModel):
+    policy_number: Optional[str] = None
+    name: Optional[str] = None
+    title: Optional[str] = None
+    type: Optional[str] = None
+    category: Optional[Union[PolicyCategory, str]] = None
+    description: Optional[str] = None
+    premium: Optional[float] = None
+    base_premium: Optional[float] = None
+    premium_amount: Optional[float] = None
+    coverage_amount: Optional[float] = None
+    duration_months: Optional[int] = None
+    status: Optional[str] = None
+    features: Optional[str] = None
+
+class PolicyCatalogStatusUpdate(BaseModel):
+    status: Optional[str] = None
+    is_active: Optional[bool] = None
+
 class PolicyStatusUpdate(BaseModel):
-    status: PolicyStatus
+    status: Optional[Union[PolicyStatus, str]] = None
+    is_active: Optional[bool] = None
 
 class PolicyListResponse(BaseModel):
     total: int

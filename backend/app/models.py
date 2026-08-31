@@ -75,6 +75,7 @@ class PolicyCatalog(Base):
     coverage_amount = Column(Float, nullable=False)
     features = Column(Text, nullable=True)
     bestseller_tag = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     policies = relationship("Policy", back_populates="catalog")

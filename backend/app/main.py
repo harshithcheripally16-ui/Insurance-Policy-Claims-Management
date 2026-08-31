@@ -107,7 +107,16 @@ def root():
 
 # Comprehensive Seed DB Function
 def seed_database():
+    import sqlalchemy
     Base.metadata.create_all(bind=engine)
+    
+    # Auto-migrate is_active column on policy_catalogs if missing
+    try:
+        with engine.begin() as conn:
+            conn.execute(sqlalchemy.text("ALTER TABLE policy_catalogs ADD COLUMN is_active BOOLEAN DEFAULT 1"))
+    except Exception:
+        pass
+
     db: Session = SessionLocal()
     try:
         # 1. Seed Admin

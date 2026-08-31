@@ -132,13 +132,13 @@ const Policies = () => {
     setIsEditing(true);
     setEditingPolicyId(p.id);
     setFormData({
-      policy_number: p.policy_number,
-      name: p.name,
-      type: p.type,
+      policy_number: p.policy_number || '',
+      name: p.name || p.title || '',
+      type: p.type || 'HEALTH',
       description: p.description || '',
-      premium: p.premium.toString(),
-      duration_months: p.duration_months.toString(),
-      status: p.status,
+      premium: (p.premium !== undefined && p.premium !== null ? p.premium : (p.base_premium || p.premium_amount || '')).toString(),
+      duration_months: (p.duration_months || 12).toString(),
+      status: p.status || 'ACTIVE',
     });
     setFormErrors({});
     setPolicyModalOpen(true);

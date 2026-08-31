@@ -115,3 +115,74 @@ def test_otp_forgot_password_flow():
     assert login_new.status_code == 200
     assert "access_token" in login_new.json()
 
+    # 6. Restore demo default password
+    from app.dependencies import get_password_hash
+    db = SessionLocal()
+    u = db.query(User).filter(User.email == "customer@insurance.com").first()
+    if u:
+        u.hashed_password = get_password_hash("Customer@123")
+        db.commit()
+    db.close()
+
+def test_admin_policy_crud():
+    # 1. Admin login
+    admin_login = client.post("/api/auth/login", json={
+        "email": "admin@insurance.com",
+        "password": "Admin@123"
+    })
+    assert admin_login.status_code == 200
+    token = admin_login.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    # 2. List policies
+    list_res = client.get("/api/admin/policies", headers=headers)
+    assert list_res.status_code == 200
+    data = list_res.json()
+    assert "items" in data
+    assert len(data["items"]) > 0
+
+    # 3. Create a new Policy
+    create_payload = {
+        "policy_number": "CAT-TEST-999",
+        "name": "Health Care Shield Pro Max",
+        "type": "HEALTH",
+        "description": "Comprehensive health protection with hospital coverage",
+        "premium": 13000.0,
+        "duration_months": 12,
+        "status": "ACTIVE"
+    }
+    create_res = client.post("/api/admin/policies", json=create_payload, headers=headers)
+    assert create_res.status_code == 201
+    created_policy = create_res.json()
+    assert created_policy["name"] == "Health Care Shield Pro Max"
+    assert created_policy["premium"] == 13000.0
+    assert created_policy["status"] == "ACTIVE"
+    policy_id = created_policy["id"]
+
+    # 4. Update Policy (Modifying premium to 15000 and name as in screenshot)
+    update_payload = {
+        "policy_number": f"CAT-{policy_id:03d}",
+        "name": "Health Care Shield Pro Updated",
+        "type": "HEALTH",
+        "description": "Updated premium and benefits",
+        "premium": 15000.0,
+        "duration_months": 12,
+        "status": "ACTIVE"
+    }
+    update_res = client.put(f"/api/admin/policies/{policy_id}", json=update_payload, headers=headers)
+    assert update_res.status_code == 200
+    updated_data = update_res.json()
+    assert updated_data["name"] == "Health Care Shield Pro Updated"
+    assert updated_data["premium"] == 15000.0
+
+    # 5. Toggle Policy Status
+    status_res = client.patch(f"/api/admin/policies/{policy_id}/status", json={"status": "INACTIVE"}, headers=headers)
+    assert status_res.status_code == 200
+    assert status_res.json()["status"] == "INACTIVE"
+
+    # 6. Delete Policy
+    delete_res = client.delete(f"/api/admin/policies/{policy_id}", headers=headers)
+    assert delete_res.status_code == 200
+    assert "deleted successfully" in delete_res.json()["message"]
+
+

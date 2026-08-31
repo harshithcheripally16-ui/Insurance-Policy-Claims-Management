@@ -97,6 +97,10 @@ app.include_router(policies_router.router)
 app.include_router(users_router.router)
 
 
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "system": "InsurCare", "time": datetime.datetime.utcnow().isoformat()}
+
 @app.get("/")
 def root():
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
